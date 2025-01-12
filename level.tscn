@@ -1,0 +1,47 @@
+[gd_scene load_steps=9 format=3 uid="uid://bbifcfy8xulk7"]
+
+[ext_resource type="PackedScene" uid="uid://dqmsn6rv6ppgx" path="res://player.tscn" id="1_55w0c"]
+[ext_resource type="PackedScene" uid="uid://cj2gr1pk6ycu6" path="res://ground_grass_import.tscn" id="2_jx0al"]
+[ext_resource type="PackedScene" uid="uid://div2thil5r16p" path="res://ground_dirt_import.tscn" id="3_urap5"]
+[ext_resource type="PackedScene" uid="uid://b5y0885efv1ss" path="res://ground_trees_import.tscn" id="4_casq8"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1viwp"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_aro03"]
+sky_material = SubResource("ProceduralSkyMaterial_1viwp")
+
+[sub_resource type="Environment" id="Environment_nxuck"]
+background_mode = 2
+sky = SubResource("Sky_aro03")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3pnei"]
+size = Vector3(50, 1, 50)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_nxuck")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.493844, 0.0782173, 0, 0.156434, 0.987688, -0.5, 0.855363, -0.135476, 0, 1, 0)
+shadow_enabled = true
+
+[node name="player" parent="." instance=ExtResource("1_55w0c")]
+transform = Transform3D(-1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, -1, 0, 1.10101, -2)
+top_level = true
+
+[node name="ground_grass2" parent="." instance=ExtResource("2_jx0al")]
+
+[node name="ground_dirt2" parent="." instance=ExtResource("3_urap5")]
+
+[node name="ground_trees" parent="." instance=ExtResource("4_casq8")]
+
+[node name="staticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="staticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+shape = SubResource("BoxShape3D_3pnei")

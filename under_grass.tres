@@ -1,0 +1,32 @@
+[gd_resource type="VisualShader" load_steps=2 format=3 uid="uid://c31keh8yaju3w"]
+
+[sub_resource type="VisualShaderNodeColorParameter" id="VisualShaderNodeColorParameter_dkkah"]
+output_port_for_preview = 0
+parameter_name = "BaseColor"
+default_value_enabled = true
+default_value = Color(0.0417918, 0.156097, 1.20327e-08, 1)
+
+[resource]
+code = "shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_schlick_ggx;
+
+uniform vec4 BaseColor : source_color = vec4(0.041792, 0.156097, 0.000000, 1.000000);
+
+
+
+void fragment() {
+// ColorParameter:7
+	vec4 n_out7p0 = BaseColor;
+
+
+// Output:0
+	ALBEDO = vec3(n_out7p0.xyz);
+	NORMAL_MAP = vec3(n_out7p0.xyz);
+
+
+}
+"
+nodes/fragment/0/position = Vector2(860, 20)
+nodes/fragment/7/node = SubResource("VisualShaderNodeColorParameter_dkkah")
+nodes/fragment/7/position = Vector2(380, 60)
+nodes/fragment/connections = PackedInt32Array(7, 0, 0, 0, 7, 0, 0, 9)

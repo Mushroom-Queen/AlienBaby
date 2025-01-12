@@ -1,0 +1,49 @@
+[gd_resource type="VisualShader" load_steps=6 format=3 uid="uid://cxldm4c8ryqk3"]
+
+[sub_resource type="Gradient" id="Gradient_l3m32"]
+colors = PackedColorArray(0.527908, 0.227469, 0.0663981, 1, 0.229141, 0.0478918, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_dksru"]
+frequency = 0.0158
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_3rj22"]
+color_ramp = SubResource("Gradient_l3m32")
+noise = SubResource("FastNoiseLite_dksru")
+
+[sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_cxcal"]
+output_port_for_preview = 0
+texture = SubResource("NoiseTexture2D_3rj22")
+
+[sub_resource type="VisualShaderNodeFloatConstant" id="VisualShaderNodeFloatConstant_tr1yt"]
+
+[resource]
+code = "shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_schlick_ggx;
+
+uniform sampler2D tex_frg_3;
+
+
+
+void fragment() {
+// Texture2D:3
+	vec4 n_out3p0 = texture(tex_frg_3, UV);
+
+
+// FloatConstant:4
+	float n_out4p0 = 0.000000;
+
+
+// Output:0
+	ALBEDO = vec3(n_out3p0.xyz);
+	SPECULAR = n_out4p0;
+	NORMAL = vec3(n_out3p0.xyz);
+
+
+}
+"
+nodes/fragment/0/position = Vector2(760, 40)
+nodes/fragment/3/node = SubResource("VisualShaderNodeTexture_cxcal")
+nodes/fragment/3/position = Vector2(200, -60)
+nodes/fragment/4/node = SubResource("VisualShaderNodeFloatConstant_tr1yt")
+nodes/fragment/4/position = Vector2(540, 20)
+nodes/fragment/connections = PackedInt32Array(3, 0, 0, 0, 3, 0, 0, 8, 4, 0, 0, 4)

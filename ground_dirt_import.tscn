@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://div2thil5r16p"]
+
+[ext_resource type="PackedScene" uid="uid://j8ymcdndyav1" path="res://ground_dirt.glb" id="1_xmy0c"]
+[ext_resource type="Shader" uid="uid://cxldm4c8ryqk3" path="res://dirt.tres" id="2_bd6g4"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uvb7r"]
+render_priority = 0
+shader = ExtResource("2_bd6g4")
+
+[node name="ground_dirt2" instance=ExtResource("1_xmy0c")]
+
+[node name="ground_dirt" parent="." index="0"]
+material_override = SubResource("ShaderMaterial_uvb7r")
