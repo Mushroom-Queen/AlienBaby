@@ -1,33 +1,44 @@
-extends RigidBody3D
+extends CharacterBody3D
 
-@onready var twist_pivot := $TwistPivot
-@onready var pitch_pivot := $TwistPivot/PitchPivot
+@onready var armature := $player/Armature
+@onready var animation_player := $player/AnimationPlayer
+@onready var spring_arm_pivot := $SpringArmPivot
+@onready var spring_arm := $SpringArmPivot/SpringArm3D
+@onready var anim_tree := $AnimationTree
 
-var mouse_sensitivity := 0.001
-var twist_input := 0.0
-var pitch_input := 0.0
+const SPEED = 5.0
+const LERP_VAL = .15
 
-func _ready() -> void:
+func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	var input := Vector3.ZERO
-	input.x = Input.get_axis("move_left", "move_right")
-	input.z = Input.get_axis("move_forward", "move_back")
-	
-	apply_central_force(input * 1200 * delta)
-	
-	twist_pivot.rotate_y(twist_input)
-	pitch_pivot.rotate_x(pitch_input)
-	pitch_pivot.rotation.x = clamp(pitch_pivot.rotation.x, deg_to_rad(-52), deg_to_rad(30))
-	twist_input = 0.0
-	pitch_input = 0.0
-	
-func _unhandled_input(event: InputEvent) -> void:
+
+func _unhandled_input(event):
+	if Input.is_action_just_pressed("quit"):
+		get_tree().quit()
+		
 	if event is InputEventMouseMotion:
-		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-			twist_input = - event.relative.x * mouse_sensitivity
-			pitch_input = - event.relative.y * mouse_sensitivity
-	if Input.is_action_just_pressed("ui_cancel"):
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		spring_arm_pivot.rotate_y(-event.relative.x * .005)
+		spring_arm.rotate_x(-event.relative.y * .005)
+		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/4, PI/4)
+
+func _physics_process(delta: float) -> void:
+	# Add the gravity.
+	if not is_on_floor():
+		velocity += get_gravity() * delta
+
+	# Get the input direction and handle the movement/deceleration.
+	# As good practice, you should replace UI actions with custom gameplay actions.
+	var input_dir := Input.get_vector("left", "right", "forward", "back")
+	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
+	if direction:
+		velocity.x = lerp(velocity.x, direction.x * SPEED, LERP_VAL)
+		velocity.z = lerp(velocity.z, direction.z * SPEED, LERP_VAL)
+		armature.rotation.y = lerp_angle(armature.rotation.y, atan2(velocity.x, velocity.z), LERP_VAL)
+	else:
+		velocity.x = lerp(velocity.x, 0.0, LERP_VAL)
+		velocity.z = lerp(velocity.z, 0.0, LERP_VAL)
+	
+	anim_tree.set("parameters/BlendSpace1D/blend_position", velocity.length() / SPEED)
+
+	move_and_slide()

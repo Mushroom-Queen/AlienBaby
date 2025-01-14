@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://dqmsn6rv6ppgx"]
+[gd_scene load_steps=8 format=3 uid="uid://dqmsn6rv6ppgx"]
 
 [ext_resource type="Script" path="res://player.gd" id="1_1k1m1"]
 [ext_resource type="PackedScene" uid="uid://b605jqe26p6tc" path="res://player.glb" id="2_do2bg"]
@@ -7,10 +7,27 @@
 radius = 0.53
 height = 3.11
 
-[node name="player" type="RigidBody3D"]
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_28uqa"]
+animation = &"idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_nqslb"]
+animation = &"waddle"
+
+[sub_resource type="AnimationNodeBlendSpace1D" id="AnimationNodeBlendSpace1D_qkllj"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_28uqa")
+blend_point_0/pos = 0.0
+blend_point_1/node = SubResource("AnimationNodeAnimation_nqslb")
+blend_point_1/pos = 1.0
+min_space = 0.0
+
+[sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_1a343"]
+graph_offset = Vector2(-470, 16)
+nodes/BlendSpace1D/node = SubResource("AnimationNodeBlendSpace1D_qkllj")
+nodes/BlendSpace1D/position = Vector2(22, 150)
+node_connections = [&"output", 0, &"BlendSpace1D"]
+
+[node name="player" type="CharacterBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-lock_rotation = true
-linear_damp = 3.0
 script = ExtResource("1_1k1m1")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
@@ -20,11 +37,36 @@ shape = SubResource("CapsuleShape3D_xn0j4")
 [node name="player" parent="." instance=ExtResource("2_do2bg")]
 transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, -1, 0)
 
-[node name="TwistPivot" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+[node name="Skeleton3D" parent="player/Armature" index="0"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+bones/0/position = Vector3(0, 1.82117, 0)
+bones/1/rotation = Quaternion(-0.000340939, 6.79695e-06, 0.000231822, 1)
+bones/2/rotation = Quaternion(0.000340939, -6.91616e-06, -0.000231822, 1)
+bones/5/rotation = Quaternion(-0.660881, -0.251468, 0.660881, -0.251468)
+bones/7/position = Vector3(0.61468, 0.208478, 0.0172493)
+bones/7/rotation = Quaternion(0.0421472, 0.169173, 0.951843, -0.25219)
+bones/8/rotation = Quaternion(-0.294603, 0.109466, -0.188674, 0.930391)
+bones/9/rotation = Quaternion(0.691392, -0.0550879, -0.0389403, 0.719324)
+bones/10/rotation = Quaternion(0.660906, -0.251402, 0.660906, 0.251402)
+bones/12/rotation = Quaternion(-0.0390786, 0.181417, 0.949627, 0.252527)
+bones/13/rotation = Quaternion(-0.318833, -0.112661, 0.207376, 0.917959)
+bones/14/rotation = Quaternion(0.701985, 0.0489623, 0.0208186, 0.710202)
+bones/16/position = Vector3(1.20214, 0.37625, 0.045941)
+bones/18/position = Vector3(-1.20214, 0.37625, 0.045941)
+bones/18/rotation = Quaternion(0.00875622, 0.70983, -0.704263, -0.00882544)
 
-[node name="PitchPivot" type="Node3D" parent="TwistPivot"]
-transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 0, 0)
+[node name="SpringArmPivot" type="Node3D" parent="."]
 
-[node name="Camera3D" type="Camera3D" parent="TwistPivot/PitchPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
+[node name="SpringArm3D" type="SpringArm3D" parent="SpringArmPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, 0)
+spring_length = 3.0
+
+[node name="Camera3D" type="Camera3D" parent="SpringArmPivot/SpringArm3D"]
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+root_node = NodePath("../player")
+tree_root = SubResource("AnimationNodeBlendTree_1a343")
+anim_player = NodePath("../player/AnimationPlayer")
+parameters/BlendSpace1D/blend_position = 0
+
+[editable path="player"]
