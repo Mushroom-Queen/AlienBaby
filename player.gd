@@ -39,6 +39,6 @@ func _physics_process(delta: float) -> void:
 		velocity.x = lerp(velocity.x, 0.0, LERP_VAL)
 		velocity.z = lerp(velocity.z, 0.0, LERP_VAL)
 	
-	anim_tree.set("parameters/BlendSpace1D/blend_position", velocity.length() / SPEED)
+	anim_tree.set("parameters/walk/blend_position", velocity.length() / SPEED)
 
 	move_and_slide()
