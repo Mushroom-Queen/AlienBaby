@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dqmsn6rv6ppgx"]
+[gd_scene load_steps=11 format=3 uid="uid://dqmsn6rv6ppgx"]
 
 [ext_resource type="Script" path="res://player.gd" id="1_1k1m1"]
 [ext_resource type="PackedScene" uid="uid://b605jqe26p6tc" path="res://player.glb" id="2_do2bg"]
@@ -7,7 +7,14 @@
 radius = 0.53
 height = 3.11
 
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_6ym3r"]
+animation = &"shoot"
+
 [sub_resource type="AnimationNodeTimeScale" id="AnimationNodeTimeScale_y0wgw"]
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_eyc5m"]
+filter_enabled = true
+filters = ["Armature/Skeleton3D:antenna1", "Armature/Skeleton3D:antenna2"]
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_28uqa"]
 animation = &"idle"
@@ -23,12 +30,17 @@ blend_point_1/pos = 1.0
 min_space = 0.0
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_1a343"]
-graph_offset = Vector2(-322, 104)
+graph_offset = Vector2(-749.409, 40.3437)
+nodes/Shoot_Animation/node = SubResource("AnimationNodeAnimation_6ym3r")
+nodes/Shoot_Animation/position = Vector2(-309.459, 304.995)
 nodes/TimeScale/node = SubResource("AnimationNodeTimeScale_y0wgw")
-nodes/TimeScale/position = Vector2(40, 140)
+nodes/TimeScale/position = Vector2(-280, 120)
+nodes/output/position = Vector2(40, 120)
+nodes/shooting/node = SubResource("AnimationNodeBlend2_eyc5m")
+nodes/shooting/position = Vector2(-120, 120)
 nodes/walk/node = SubResource("AnimationNodeBlendSpace1D_qkllj")
-nodes/walk/position = Vector2(-220, 120)
-node_connections = [&"TimeScale", 0, &"walk", &"output", 0, &"TimeScale"]
+nodes/walk/position = Vector2(-440, 120)
+node_connections = [&"TimeScale", 0, &"walk", &"output", 0, &"shooting", &"shooting", 0, &"TimeScale", &"shooting", 1, &"Shoot_Animation"]
 
 [node name="player" type="CharacterBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -43,21 +55,21 @@ transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, -1, 0)
 
 [node name="Skeleton3D" parent="player/Armature" index="0"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
-bones/0/position = Vector3(0.0557094, 1.93442, 0.0557094)
-bones/1/rotation = Quaternion(-0.000340953, -6.5568e-06, 0.0393771, 0.999224)
+bones/0/position = Vector3(0, 1.86386, 0)
+bones/1/rotation = Quaternion(-0.000340402, 2.01403e-05, -0.0389138, 0.999243)
 bones/2/rotation = Quaternion(0.000340939, -6.91616e-06, -0.000231824, 1)
 bones/3/rotation = Quaternion(-2.91033e-11, -2.58047e-17, 5.49258e-12, 1)
-bones/5/rotation = Quaternion(-0.632956, -0.183506, 0.68288, -0.315224)
+bones/5/rotation = Quaternion(-0.668875, -0.271606, 0.652863, -0.229361)
 bones/7/position = Vector3(0.61468, 0.208478, 0.0172493)
-bones/7/rotation = Quaternion(0.0418071, 0.130366, 0.965466, -0.221659)
-bones/8/rotation = Quaternion(-0.252473, 0.112933, -0.161826, 0.947267)
-bones/9/rotation = Quaternion(0.688414, -0.0628477, -0.0292992, 0.721995)
-bones/10/rotation = Quaternion(0.673184, -0.284177, 0.64749, 0.216387)
-bones/12/rotation = Quaternion(-0.0100864, 0.362496, 0.885679, 0.289943)
-bones/13/rotation = Quaternion(-0.39834, -0.108351, 0.259321, 0.87312)
-bones/14/rotation = Quaternion(0.631797, 0.0891083, 0.0119782, 0.769902)
-bones/16/position = Vector3(1.20214, 0.436454, 0.045941)
-bones/18/position = Vector3(-1.20214, 0.681175, 0.569306)
+bones/7/rotation = Quaternion(0.0192165, 0.31417, 0.905902, -0.28332)
+bones/8/rotation = Quaternion(-0.396602, 0.104424, -0.254206, 0.875889)
+bones/9/rotation = Quaternion(0.666554, -0.0630446, -0.0109944, 0.742705)
+bones/10/rotation = Quaternion(0.647643, -0.216749, 0.673068, 0.283829)
+bones/12/rotation = Quaternion(-0.0430186, 0.155729, 0.958521, 0.234809)
+bones/13/rotation = Quaternion(-0.270508, -0.11656, 0.176101, 0.93927)
+bones/14/rotation = Quaternion(0.684095, 0.0636891, 0.029232, 0.726018)
+bones/16/position = Vector3(1.20214, 0.564763, 0.35268)
+bones/18/position = Vector3(-1.20214, 0.37625, 0.045941)
 bones/18/rotation = Quaternion(0.00875622, 0.70983, -0.704263, -0.00882544)
 
 [node name="SpringArmPivot" type="Node3D" parent="."]
@@ -73,6 +85,7 @@ root_node = NodePath("../player")
 tree_root = SubResource("AnimationNodeBlendTree_1a343")
 anim_player = NodePath("../player/AnimationPlayer")
 parameters/TimeScale/scale = 4.43
+parameters/shooting/blend_amount = 0.0
 parameters/walk/blend_position = 1.0
 
 [editable path="player"]
