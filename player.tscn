@@ -45,6 +45,7 @@ blend_point_1/pos = 1.0
 min_space = 0.0
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_1a343"]
+graph_offset = Vector2(-528, 360)
 "nodes/Animation 2/node" = SubResource("AnimationNodeAnimation_fsp8r")
 "nodes/Animation 2/position" = Vector2(-300, 620)
 nodes/Shoot_Animation/node = SubResource("AnimationNodeAnimation_6ym3r")
@@ -81,42 +82,42 @@ transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, -1, 0)
 
 [node name="Skeleton3D" parent="player/Armature" index="0"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
-bones/0/position = Vector3(0, 1.82682, 0)
+bones/0/position = Vector3(0, 1.92806, 0)
 bones/0/rotation = Quaternion(-2.98023e-08, 1.19209e-07, 1.05879e-22, 1)
-bones/1/rotation = Quaternion(-0.00034101, -1.29655e-06, 0.0239609, 0.999713)
+bones/1/rotation = Quaternion(-0.000340544, 1.76244e-05, -0.0315306, 0.999503)
 bones/2/rotation = Quaternion(0.000340939, -6.91616e-06, -0.000231824, 1)
 bones/3/rotation = Quaternion(-2.91033e-11, -2.58047e-17, 5.49258e-12, 1)
 bones/5/position = Vector3(0.738666, 2.49247, 1.76112e-07)
-bones/5/rotation = Quaternion(-0.61744, -0.151205, 0.690751, -0.344627)
+bones/5/rotation = Quaternion(-0.680548, -0.307337, 0.636823, -0.191975)
 bones/6/rotation = Quaternion(0.287239, -1.65125e-07, -1.36702e-07, 0.957859)
 bones/6/scale = Vector3(1, 1, 1)
 bones/7/position = Vector3(0.61468, 0.208478, 0.0172493)
-bones/7/rotation = Quaternion(0.0425947, 0.166234, 0.952936, -0.249929)
+bones/7/rotation = Quaternion(0.0191562, 0.348939, 0.903731, -0.247276)
 bones/7/scale = Vector3(0.999999, 1, 1)
-bones/8/rotation = Quaternion(-0.28881, 0.111198, -0.185116, 0.932714)
+bones/8/rotation = Quaternion(-0.307071, 0.110227, -0.19682, 0.924564)
 bones/8/scale = Vector3(1, 1, 1)
-bones/9/rotation = Quaternion(0.689567, -0.0578401, -0.0389109, 0.720859)
+bones/9/rotation = Quaternion(0.561375, -0.110683, -0.0264192, 0.819701)
 bones/9/scale = Vector3(1, 1, 1)
 bones/10/position = Vector3(-0.738665, 2.49247, -1.76112e-07)
-bones/10/rotation = Quaternion(0.68295, -0.315465, 0.632836, 0.183246)
+bones/10/rotation = Quaternion(0.620163, -0.156697, 0.689526, 0.339703)
 bones/10/scale = Vector3(1, 1, 1)
 bones/11/rotation = Quaternion(0.287239, 1.63435e-07, 1.31067e-07, 0.957859)
 bones/11/scale = Vector3(1, 1, 1)
 bones/12/position = Vector3(-0.646431, 0.19582, 0.0196889)
-bones/12/rotation = Quaternion(-0.01719, 0.340288, 0.894638, 0.289017)
+bones/12/rotation = Quaternion(-0.0506203, 0.10348, 0.972785, 0.201043)
 bones/12/scale = Vector3(1, 1, 1)
-bones/13/rotation = Quaternion(-0.431999, -0.105529, 0.281232, 0.850382)
-bones/14/rotation = Quaternion(0.677243, 0.0555077, -0.00869991, 0.733611)
+bones/13/rotation = Quaternion(-0.170502, -0.120576, 0.110997, 0.971633)
+bones/14/rotation = Quaternion(0.645784, 0.0911999, 0.0500593, 0.756399)
 bones/14/scale = Vector3(1, 1, 1)
 bones/15/scale = Vector3(1, 1, 1)
-bones/16/position = Vector3(1.20214, 0.377611, 0.045941)
+bones/16/position = Vector3(1.20214, 0.624877, 0.659105)
 bones/16/rotation = Quaternion(-0.00875622, 0.70983, -0.704263, 0.00882544)
 bones/17/scale = Vector3(1, 1, 1)
-bones/18/position = Vector3(-1.20214, 0.557411, 0.366855)
+bones/18/position = Vector3(-1.20214, 0.37625, 0.045941)
 bones/18/rotation = Quaternion(0.00875622, 0.70983, -0.704263, -0.00882544)
 
 [node name="leafs" type="BoneAttachment3D" parent="player/Armature/Skeleton3D" index="20"]
-transform = Transform3D(0.998874, -0.0474449, 1.38099e-05, 0.0474449, 0.998874, 7.15161e-07, -1.38283e-05, -5.91972e-08, 1, -0.153227, 7.89748, -0.00129415)
+transform = Transform3D(0.997982, 0.0634926, 1.38041e-05, -0.0634926, 0.997982, -8.18738e-07, -1.38283e-05, -5.943e-08, 1, 0.203001, 7.99595, -0.00129415)
 bone_name = "leafs"
 bone_idx = 4
 
@@ -144,7 +145,7 @@ root_node = NodePath("../player")
 tree_root = SubResource("AnimationNodeBlendTree_1a343")
 anim_player = NodePath("../player/AnimationPlayer")
 parameters/TimeScale/scale = 4.43
-"parameters/TimeScale 2/scale" = 6.0
+"parameters/TimeScale 2/scale" = 7.0
 "parameters/TimeScale 3/scale" = 4.0
 parameters/roll/active = false
 parameters/roll/internal_active = false
