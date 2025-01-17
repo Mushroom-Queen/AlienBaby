@@ -10,9 +10,6 @@ height = 3.11
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_fsp8r"]
 animation = &"spin"
 
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_yohm8"]
-animation = &"roll2"
-
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_6ym3r"]
 animation = &"shoot"
 
@@ -23,6 +20,9 @@ animation = &"shoot"
 [sub_resource type="AnimationNodeTimeScale" id="AnimationNodeTimeScale_y0wgw"]
 
 [sub_resource type="AnimationNodeOneShot" id="AnimationNodeOneShot_pupl6"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_yohm8"]
+animation = &"roll2"
 
 [sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_eyc5m"]
 filter_enabled = true
@@ -44,9 +44,7 @@ blend_point_1/pos = 1.0
 min_space = 0.0
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_1a343"]
-graph_offset = Vector2(-715.357, 86.9017)
-nodes/Animation/node = SubResource("AnimationNodeAnimation_yohm8")
-nodes/Animation/position = Vector2(-300, 460)
+graph_offset = Vector2(-551.594, 415.681)
 "nodes/Animation 2/node" = SubResource("AnimationNodeAnimation_fsp8r")
 "nodes/Animation 2/position" = Vector2(-300, 620)
 nodes/Shoot_Animation/node = SubResource("AnimationNodeAnimation_6ym3r")
@@ -60,13 +58,15 @@ nodes/TimeScale/position = Vector2(-280, 120)
 nodes/output/position = Vector2(380, 120)
 nodes/roll/node = SubResource("AnimationNodeOneShot_pupl6")
 nodes/roll/position = Vector2(40, 120)
+nodes/roll_animation/node = SubResource("AnimationNodeAnimation_yohm8")
+nodes/roll_animation/position = Vector2(-300, 460)
 nodes/shooting/node = SubResource("AnimationNodeBlend2_eyc5m")
 nodes/shooting/position = Vector2(-120, 120)
 nodes/spin/node = SubResource("AnimationNodeOneShot_nghrn")
 nodes/spin/position = Vector2(220, 120)
 nodes/walk/node = SubResource("AnimationNodeBlendSpace1D_qkllj")
 nodes/walk/position = Vector2(-440, 120)
-node_connections = [&"TimeScale", 0, &"walk", &"TimeScale 2", 0, &"Animation", &"TimeScale 3", 0, &"Animation 2", &"output", 0, &"spin", &"roll", 0, &"shooting", &"roll", 1, &"TimeScale 2", &"shooting", 0, &"TimeScale", &"shooting", 1, &"Shoot_Animation", &"spin", 0, &"roll", &"spin", 1, &"TimeScale 3"]
+node_connections = [&"TimeScale", 0, &"walk", &"TimeScale 2", 0, &"roll_animation", &"TimeScale 3", 0, &"Animation 2", &"output", 0, &"spin", &"roll", 0, &"shooting", &"roll", 1, &"TimeScale 2", &"shooting", 0, &"TimeScale", &"shooting", 1, &"Shoot_Animation", &"spin", 0, &"roll", &"spin", 1, &"TimeScale 3"]
 
 [node name="player" type="CharacterBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -81,38 +81,38 @@ transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, -1, 0)
 
 [node name="Skeleton3D" parent="player/Armature" index="0"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
-bones/0/position = Vector3(0, 1.92364, 0)
+bones/0/position = Vector3(0.0488122, 1.9211, 0.0488122)
 bones/0/rotation = Quaternion(-2.98023e-08, 1.19209e-07, 1.05879e-22, 1)
-bones/1/rotation = Quaternion(-0.000340746, 1.32297e-05, -0.0186363, 0.999826)
+bones/1/rotation = Quaternion(-0.000340972, -5.43729e-06, 0.0360966, 0.999348)
 bones/2/rotation = Quaternion(0.000340939, -6.91616e-06, -0.000231824, 1)
 bones/3/rotation = Quaternion(-2.91033e-11, -2.58047e-17, 5.49258e-12, 1)
 bones/5/position = Vector3(0.738666, 2.49247, 1.76112e-07)
-bones/5/rotation = Quaternion(-0.681529, -0.310619, 0.635229, -0.188461)
+bones/5/rotation = Quaternion(-0.640802, -0.200891, 0.67797, -0.298952)
 bones/6/rotation = Quaternion(0.287239, -1.65125e-07, -1.36702e-07, 0.957859)
 bones/6/scale = Vector3(1, 1, 1)
 bones/7/position = Vector3(0.61468, 0.208478, 0.0172493)
-bones/7/rotation = Quaternion(0.0217862, 0.332374, 0.910063, -0.246655)
+bones/7/rotation = Quaternion(0.0407307, 0.140151, 0.962509, -0.228638)
 bones/7/scale = Vector3(0.999999, 1, 1)
-bones/8/rotation = Quaternion(-0.304673, 0.110358, -0.195283, 0.925667)
+bones/8/rotation = Quaternion(-0.2673, 0.112257, -0.171329, 0.941592)
 bones/8/scale = Vector3(1, 1, 1)
-bones/9/rotation = Quaternion(0.573339, -0.105293, -0.0269621, 0.812077)
+bones/9/rotation = Quaternion(0.69243, -0.0597491, -0.0283052, 0.718449)
 bones/9/scale = Vector3(1, 1, 1)
 bones/10/position = Vector3(-0.738665, 2.49247, -1.76112e-07)
-bones/10/rotation = Quaternion(0.617049, -0.150422, 0.690922, 0.345327)
+bones/10/rotation = Quaternion(0.667203, -0.266889, 0.654806, 0.23418)
 bones/10/scale = Vector3(1, 1, 1)
 bones/11/rotation = Quaternion(0.287239, 1.63435e-07, 1.31067e-07, 0.957859)
 bones/11/scale = Vector3(1, 1, 1)
 bones/12/position = Vector3(-0.646431, 0.19582, 0.0196889)
-bones/12/rotation = Quaternion(-0.0499985, 0.107832, 0.971773, 0.20379)
+bones/12/rotation = Quaternion(-0.0120263, 0.355166, 0.888956, 0.288911)
 bones/12/scale = Vector3(1, 1, 1)
-bones/13/rotation = Quaternion(-0.178924, -0.120312, 0.11648, 0.969507)
-bones/14/rotation = Quaternion(0.649067, 0.0889211, 0.0482453, 0.753975)
+bones/13/rotation = Quaternion(-0.399693, -0.108243, 0.260202, 0.872252)
+bones/14/rotation = Quaternion(0.639139, 0.0837658, 0.00988968, 0.764452)
 bones/14/scale = Vector3(1, 1, 1)
 bones/15/scale = Vector3(1, 1, 1)
-bones/16/position = Vector3(1.20214, 0.59727, 0.606325)
+bones/16/position = Vector3(1.20214, 0.436664, 0.045941)
 bones/16/rotation = Quaternion(-0.00875622, 0.70983, -0.704263, 0.00882544)
 bones/17/scale = Vector3(1, 1, 1)
-bones/18/position = Vector3(-1.20214, 0.37625, 0.045941)
+bones/18/position = Vector3(-1.20214, 0.657846, 0.533355)
 bones/18/rotation = Quaternion(0.00875622, 0.70983, -0.704263, -0.00882544)
 
 [node name="SpringArmPivot" type="Node3D" parent="."]
@@ -128,8 +128,8 @@ root_node = NodePath("../player")
 tree_root = SubResource("AnimationNodeBlendTree_1a343")
 anim_player = NodePath("../player/AnimationPlayer")
 parameters/TimeScale/scale = 4.43
-"parameters/TimeScale 2/scale" = 3.0
-"parameters/TimeScale 3/scale" = 3.0
+"parameters/TimeScale 2/scale" = 6.0
+"parameters/TimeScale 3/scale" = 4.0
 parameters/roll/active = false
 parameters/roll/internal_active = false
 parameters/roll/request = 0
