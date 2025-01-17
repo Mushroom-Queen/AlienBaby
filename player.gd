@@ -6,6 +6,12 @@ extends CharacterBody3D
 @onready var spring_arm := $SpringArmPivot/SpringArm3D
 @onready var animation_tree := $AnimationTree
 @onready var mesh := $player/Armature/Skeleton3D
+@onready var leaf_bone = $player/Armature/Skeleton3D/leafs
+@onready var leaf1 = $player/Armature/Skeleton3D/leafs/leaf1
+@onready var leaf2 = $player/Armature/Skeleton3D/leafs/leaf2
+@onready var leaf3 = $player/Armature/Skeleton3D/leafs/leaf3
+@onready var leaf4 = $player/Armature/Skeleton3D/leafs/leaf4
+
 
 const ROLL_SPEED = 6.0
 const SPEED = 5.0
@@ -17,6 +23,8 @@ const SPIN_ROTATION_SPEED = 15.0
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
+var life = 4
+var life_rendered = 4
 var action_state = ActionState.IDLE
 var is_rolling = false
 var is_spinning = false
@@ -78,7 +86,37 @@ func _unhandled_input(event):
 		spring_arm.rotate_x(-event.relative.y * .005)
 		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/4, PI/4)
 
+func update_life_leafs():
+	if life != life_rendered:
+		life_rendered = life
+		if life == 4:
+			leaf1.visible = true
+			leaf2.visible = true
+			leaf3.visible = true
+			leaf4.visable = true
+		if life == 3:
+			leaf1.visible = false
+			leaf2.visible = true
+			leaf3.visible = true
+			leaf4.visable = true
+		if life == 2:
+			leaf1.visible = false
+			leaf2.visible = false
+			leaf3.visible = true
+			leaf4.visable = true
+		if life == 1:
+			leaf1.visible = false
+			leaf2.visible = false
+			leaf3.visible = false
+			leaf4.visable = true
+		if life == 0:
+			leaf1.visible = false
+			leaf2.visible = false
+			leaf3.visible = false
+			leaf4.visable = false
+
 func _physics_process(delta: float) -> void:
+	update_life_leafs()
 	is_rolling = animation_tree.get("parameters/roll/active")
 	prev_is_spinning = is_spinning
 	is_spinning = animation_tree.get("parameters/spin/active")
