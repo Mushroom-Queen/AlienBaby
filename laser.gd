@@ -2,16 +2,16 @@ extends Node3D
 
 @onready var ray := $RayCast3D
 @onready var mesh := $MeshInstance3D
-var is_firing := false
+var is_charging := false
+var can_fire := true
+var charge_timer: SceneTreeTimer = null
 var world: Node
 var player: CharacterBody3D
 var camera: Camera3D
-const PROJECTILE_SPEED := 50.0  # Adjust this for laser speed
-const MAX_PROJECTILE_LIFETIME := 2.0  # Seconds before deletion
-const SEGMENT_SPACING := 1.0  # Distance between segments
-
-# Store active projectiles as an array of arrays (each inner array is a laser beam)
-var laser_beams := []
+const PROJECTILE_SPEED := 50.0
+const MAX_PROJECTILE_LIFETIME := 2.0
+const CHARGE_TIME := 0.5  # Time in seconds to charge the shot
+var current_bolt = null  # Track the active bolt
 
 func _ready():
 	var root = get_tree().root
@@ -22,7 +22,6 @@ func _ready():
 			camera = player.get_node_or_null("SpringArmPivot/SpringArm3D/Camera3D")
 			if camera:
 				ray.add_exception(player)
-	# Hide the original mesh - we'll use it as a template
 	mesh.visible = false
 
 func find_world(node: Node) -> Node:
@@ -34,87 +33,82 @@ func find_world(node: Node) -> Node:
 			return found
 	return null
 
-func start_firing():
-	is_firing = true
-	spawn_laser_beam()
-	
-func stop_firing():
-	is_firing = false
+func start_charging():
+	if can_fire and world:  # Only start if we can fire and have a world reference
+		is_charging = true
+		can_fire = false
+		# Store the timer reference so we can cancel it
+		charge_timer = get_tree().create_timer(CHARGE_TIME)
+		charge_timer.timeout.connect(fire_charged_bolt)
 
-func spawn_laser_beam():
-	var segments = []
-	var num_segments = 5  # Number of segments in each laser beam
+func start_firing():
+	start_charging()
+
+func stop_firing():
+	stop_charging()
+
+func stop_charging():
+	if is_charging:
+		is_charging = false
+		# Immediately allow firing again if we cancel a charge
+		can_fire = true
+		# If we have a pending charge timer, disconnect and nullify it
+		if charge_timer and is_instance_valid(charge_timer):
+			if charge_timer.timeout.is_connected(fire_charged_bolt):
+				charge_timer.timeout.disconnect(fire_charged_bolt)
+		charge_timer = null
+
+func fire_charged_bolt():
+	if is_charging:
+		spawn_bolt()
+		is_charging = false
+		# Add cooldown before next charge
+		var cooldown_timer = get_tree().create_timer(0.2)
+		cooldown_timer.timeout.connect(func(): can_fire = true)
+
+func spawn_bolt():
+	if not world:
+		return
+		
+	# Remove previous bolt if it exists
+	if current_bolt and is_instance_valid(current_bolt):
+		current_bolt.queue_free()
+	
+	# Create new bolt
+	var bolt = mesh.duplicate() as MeshInstance3D
+	bolt.visible = true
+	bolt.scale = Vector3(1.5, 1.5, 3.0)  # Make bolt larger than regular beam segments
+	
+	# Store bolt data
 	var direction = -camera.global_transform.basis.z
+	bolt.set_meta("direction", direction)
+	bolt.set_meta("spawn_time", Time.get_unix_time_from_system())
 	
-	for i in range(num_segments):
-		# Duplicate the template mesh
-		var segment = mesh.duplicate() as MeshInstance3D
-		segment.visible = true
-		
-		# Set initial transform
-		segment.global_position = global_position + (direction * i * SEGMENT_SPACING)
-		segment.global_transform.basis = camera.global_transform.basis
-		
-		# Store segment index
-		segment.set_meta("segment_index", i)
-		
-		# Add to scene
-		add_child(segment)
-		segments.append(segment)
+	world.add_child(bolt)
 	
-	# Store creation time and initial direction for the beam
-	var beam_data = {
-		"segments": segments,
-		"spawn_time": Time.get_unix_time_from_system(),
-		"direction": direction
-	}
+	var spawn_pos = global_position
 	
-	laser_beams.append(beam_data)
+	bolt.global_position = spawn_pos
+	
+	bolt.global_transform.basis = camera.global_transform.basis
+	bolt.rotate_object_local(Vector3.RIGHT, PI/2)
+		
+	current_bolt = bolt
 
 func _physics_process(delta: float) -> void:
 	if not camera or not is_instance_valid(camera):
 		return
 	
-	# Spawn new laser beams while firing
-	if is_firing:
-		spawn_laser_beam()
-	
-	# Update existing laser beams
-	var current_time = Time.get_unix_time_from_system()
-	var expired_beams = []
-	
-	for beam in laser_beams:
-		var segments = beam["segments"]
-		var direction = beam["direction"]
+	# Update active bolt
+	if current_bolt and is_instance_valid(current_bolt):
+		var direction = current_bolt.get_meta("direction")
+		var spawn_time = current_bolt.get_meta("spawn_time")
+		var current_time = Time.get_unix_time_from_system()
 		
-		for i in range(segments.size()):
-			var segment = segments[i]
-			
-			# Move segment
-			segment.global_position += direction * PROJECTILE_SPEED * delta
-			
-			# Make segment look at the next segment (except for the last one)
-			if i < segments.size() - 1:
-				var next_segment = segments[i + 1]
-				var look_at_pos = next_segment.global_position
-				
-				# Look at next segment using camera's up vector for consistent orientation
-				var up_vector = camera.global_transform.basis.y
-				segment.look_at_from_position(segment.global_position, look_at_pos, up_vector)
-				# Rotate to align with beam direction
-				segment.rotate_object_local(Vector3.RIGHT, PI/2)
-			else:
-				# Last segment maintains original direction
-				segment.global_transform.basis = camera.global_transform.basis
-				segment.rotate_object_local(Vector3.RIGHT, PI/2)
+		# Move bolt
+		current_bolt.global_position += direction * PROJECTILE_SPEED * delta
 		
 		# Check lifetime
-		var age = current_time - beam["spawn_time"]
-		if age >= MAX_PROJECTILE_LIFETIME:
-			expired_beams.append(beam)
-	
-	# Remove expired beams
-	for beam in expired_beams:
-		laser_beams.erase(beam)
-		for segment in beam["segments"]:
-			segment.queue_free()
+		if current_time - spawn_time >= MAX_PROJECTILE_LIFETIME:
+			current_bolt.queue_free()
+			current_bolt = null

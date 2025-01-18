@@ -2,10 +2,9 @@
 
 [ext_resource type="Script" path="res://laser.gd" id="1_xufwv"]
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_tweii"]
-top_radius = 0.085
-bottom_radius = 0.085
-height = 1.0
+[sub_resource type="SphereMesh" id="SphereMesh_d752j"]
+radius = 0.22
+height = 0.44
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_udhsm"]
 albedo_color = Color(1, 0, 0, 1)
@@ -18,5 +17,6 @@ enabled = false
 target_position = Vector3(0, -1000, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("CylinderMesh_tweii")
+visible = false
+mesh = SubResource("SphereMesh_d752j")
 surface_material_override/0 = SubResource("StandardMaterial3D_udhsm")
