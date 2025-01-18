@@ -11,14 +11,17 @@ extends CharacterBody3D
 @onready var leaf2 = $player/Armature/Skeleton3D/leafs/leaf2
 @onready var leaf3 = $player/Armature/Skeleton3D/leafs/leaf3
 @onready var leaf4 = $player/Armature/Skeleton3D/leafs/leaf4
+@onready var laser = $player/Armature/Skeleton3D/leafs/laser
 
-const ROLL_SPEED = 5.5
+const ROLL_SPEED = 6.0
 const SPEED = 5.0
 const LERP_VAL = .15
 const ROLL_ROTATION_SPEED = 10.0
 const ROLL_HEIGHT = 3
 const SPIN_ROTATION_SPEED = 15.0
-const ROLL_DURATION = 0.4  # Fixed duration for roll in seconds
+const ROLL_DURATION = 0.6
+const CAMERA_LERP_SPEED = 0.1
+const SHOOTING_CAMERA_OFFSET = Vector3(1.5, 1.4, 0)
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
@@ -33,47 +36,15 @@ var roll_timer = 0.0
 var initial_mesh_position = Vector3.ZERO
 var spin_rotation = 0.0
 var prev_is_spinning = false
+var original_spring_arm_position: Vector3
+var original_spring_arm_rotation: Vector3
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	mesh.rotation = Vector3(0, -PI, 0)
 	initial_mesh_position = mesh.position
-
-func _unhandled_input(event):
-	if Input.is_action_just_pressed("quit"):
-		get_tree().quit()
-	
-	if Input.is_action_just_pressed("spin") and action_state != ActionState.ROLL:
-		action_state = ActionState.SPIN
-		is_spinning = true
-		spin_rotation = 0.0
-		animation_tree.set("parameters/spin/request", true)
-	
-	if Input.is_action_just_pressed("roll") and action_state != ActionState.ATTACK and action_state != ActionState.SPIN:
-		var input_dir := Input.get_vector("left", "right", "forward", "back")
-		var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-		direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
-		
-		if direction.length() > 0.1:
-			action_state = ActionState.ROLL
-			roll_direction = direction
-			armature.rotation.y = atan2(direction.x, direction.z)
-			initial_roll_rotation = armature.rotation.y
-			roll_timer = 0.0
-			animation_tree.set("parameters/roll/request", true)
-	
-	if Input.is_action_just_pressed("attack") and action_state != ActionState.SPIN:
-		action_state = ActionState.ATTACK
-	
-	if Input.is_action_just_released("attack"):
-		if action_state == ActionState.ATTACK:
-			action_state = ActionState.IDLE
-			animation_tree.set("parameters/shooting/blend_amount", 0.0)
-	
-	if event is InputEventMouseMotion:
-		spring_arm_pivot.rotate_y(-event.relative.x * .005)
-		spring_arm.rotate_x(-event.relative.y * .005)
-		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/4, PI/4)
+	original_spring_arm_position = spring_arm.position
+	original_spring_arm_rotation = spring_arm.rotation
 
 func update_life_leafs():
 	if life != life_rendered:
@@ -104,8 +75,54 @@ func update_life_leafs():
 			leaf3.visible = false
 			leaf4.visable = false
 
+func update_camera(delta: float) -> void:
+	if action_state == ActionState.ATTACK:
+		spring_arm.position = spring_arm.position.lerp(SHOOTING_CAMERA_OFFSET, CAMERA_LERP_SPEED)
+	else:
+		spring_arm.position = spring_arm.position.lerp(original_spring_arm_position, CAMERA_LERP_SPEED)
+
+func _unhandled_input(event):
+	if Input.is_action_just_pressed("quit"):
+		get_tree().quit()
+	
+	if Input.is_action_just_pressed("spin") and action_state != ActionState.ROLL:
+		action_state = ActionState.SPIN
+		is_spinning = true
+		spin_rotation = 0.0
+		animation_tree.set("parameters/spin/request", true)
+	
+	if Input.is_action_just_pressed("roll") and action_state != ActionState.ATTACK and action_state != ActionState.SPIN:
+		var input_dir := Input.get_vector("left", "right", "forward", "back")
+		var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
+		
+		if direction.length() > 0.1:
+			action_state = ActionState.ROLL
+			roll_direction = direction
+			armature.rotation.y = atan2(direction.x, direction.z)
+			initial_roll_rotation = armature.rotation.y
+			roll_timer = 0.0
+			animation_tree.set("parameters/roll/request", true)
+	
+	if Input.is_action_just_pressed("attack") and action_state != ActionState.SPIN:
+		action_state = ActionState.ATTACK
+		laser.start_firing()
+	
+	if Input.is_action_just_released("attack"):
+		if action_state == ActionState.ATTACK:
+			action_state = ActionState.IDLE
+			animation_tree.set("parameters/shooting/blend_amount", 0.0)
+			laser.stop_firing()
+	
+	if event is InputEventMouseMotion:
+		spring_arm_pivot.rotate_y(-event.relative.x * .005)
+		spring_arm.rotate_x(-event.relative.y * .005)
+		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/4, PI/4)
+
 func _physics_process(delta: float) -> void:
 	update_life_leafs()
+	update_camera(delta)
+	
 	is_rolling = animation_tree.get("parameters/roll/active")
 	prev_is_spinning = is_spinning
 	is_spinning = animation_tree.get("parameters/spin/active")
@@ -119,6 +136,7 @@ func _physics_process(delta: float) -> void:
 	if action_state == ActionState.ATTACK:
 		var lerp_to_1 = lerpf(animation_tree.get("parameters/shooting/blend_amount"), 1.0, get_process_delta_time() * 20)
 		animation_tree.set("parameters/shooting/blend_amount", lerp_to_1)
+		armature.rotation.y = spring_arm_pivot.rotation.y
 	
 	var input_dir := Input.get_vector("left", "right", "forward", "back")
 	var direction: Vector3
@@ -157,7 +175,7 @@ func _physics_process(delta: float) -> void:
 			direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 			direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
 			
-			if direction:
+			if direction and action_state != ActionState.ATTACK:
 				action_state = ActionState.WALK if action_state == ActionState.IDLE else action_state
 				armature.rotation.y = lerp_angle(armature.rotation.y, atan2(direction.x, direction.z), LERP_VAL)
 			
