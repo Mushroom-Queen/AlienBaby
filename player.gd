@@ -100,12 +100,6 @@ func _unhandled_input(event):
 		else:
 			spring_arm.spring_length -= .1
 	
-	if Input.is_action_just_pressed("spin") and action_state != ActionState.ROLL:
-		action_state = ActionState.SPIN
-		is_spinning = true
-		spin_rotation = 0.0
-		animation_tree.set("parameters/spin/request", true)
-	
 	if Input.is_action_just_pressed("roll") and action_state != ActionState.ATTACK and action_state != ActionState.SPIN:
 		var input_dir := Input.get_vector("left", "right", "forward", "back")
 		var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
@@ -138,11 +132,29 @@ func _physics_process(delta: float) -> void:
 	update_life_leafs()
 	update_camera(delta)
 	
+	# Update animation states first
 	is_rolling = animation_tree.get("parameters/roll/active")
 	prev_is_spinning = is_spinning
 	is_spinning = animation_tree.get("parameters/spin/active")
 	
-	if prev_is_spinning and !is_spinning:
+	# Reset states based on animation completion
+	if action_state == ActionState.ROLL and !is_rolling:
+		action_state = ActionState.IDLE
+	elif prev_is_spinning and !is_spinning:
+		action_state = ActionState.IDLE
+	
+	# Allow spinning when not in a restricted state and no animations are playing
+	if Input.is_action_pressed("spin") and action_state != ActionState.ATTACK and not is_rolling:
+		if not is_spinning:  # Only start new spin if we aren't already spinning
+			action_state = ActionState.SPIN
+			is_spinning = true
+			spin_rotation = 0.0
+		# Request new spin animation when current one completes
+		if not animation_tree.get("parameters/spin/active"):
+			animation_tree.set("parameters/spin/request", true)
+	
+	# Reset action state to IDLE when roll animation completes
+	if action_state == ActionState.ROLL and !is_rolling:
 		action_state = ActionState.IDLE
 	
 	if not is_on_floor():
@@ -157,6 +169,8 @@ func _physics_process(delta: float) -> void:
 	var direction: Vector3
 	
 	if is_spinning:
+		mesh.rotation = Vector3(0, -PI, 0)
+		mesh.position = initial_mesh_position
 		direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 		direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
 		spin_rotation += SPIN_ROTATION_SPEED * delta
