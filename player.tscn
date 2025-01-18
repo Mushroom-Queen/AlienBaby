@@ -84,58 +84,61 @@ transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, -1, 0)
 
 [node name="Skeleton3D" parent="player/Armature" index="0"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
-bones/0/position = Vector3(0, 0.164628, 0)
-bones/0/rotation = Quaternion(0, 0.0265725, 0, 0.999647)
-bones/1/rotation = Quaternion(-0.000341011, 2.62609e-07, 0.0193908, 0.999812)
+bones/0/position = Vector3(0, 0.153983, 0)
+bones/0/rotation = Quaternion(0, -0.00799495, 0, 0.999968)
+bones/1/rotation = Quaternion(-0.000340895, 8.69386e-06, -0.00533196, 0.999986)
 bones/2/rotation = Quaternion(0.000340939, -6.91616e-06, -0.000231822, 1)
 bones/3/rotation = Quaternion(3.64557e-23, -1.59801e-22, 5.49072e-12, 1)
 bones/5/position = Vector3(0.0642403, 0.216765, 1.53161e-08)
-bones/5/rotation = Quaternion(0.670828, 0.277227, -0.650496, 0.223583)
+bones/5/rotation = Quaternion(0.658076, 0.242466, -0.664236, 0.258719)
 bones/6/rotation = Quaternion(0.287239, -1.65125e-07, -1.36703e-07, 0.957859)
 bones/6/scale = Vector3(1, 1, 1)
 bones/7/position = Vector3(0.0559364, 0.0181487, -0.000727577)
-bones/7/rotation = Quaternion(0.014173, 0.18786, 0.952599, -0.238877)
+bones/7/rotation = Quaternion(0.0440807, 0.192843, 0.938043, -0.284505)
 bones/7/scale = Vector3(0.999999, 1, 1)
-bones/8/rotation = Quaternion(-0.256691, 0.0738892, -0.185692, 0.945605)
+bones/8/rotation = Quaternion(-0.342313, 0.0706079, -0.247632, 0.903612)
 bones/8/scale = Vector3(1, 1, 1)
-bones/9/rotation = Quaternion(0.647469, -0.0378737, -0.0463256, 0.759739)
+bones/9/rotation = Quaternion(0.701902, -0.00290735, -0.0313417, 0.711577)
 bones/9/scale = Vector3(1, 1, 1)
 bones/10/position = Vector3(-0.0642403, 0.216765, -1.53161e-08)
-bones/10/rotation = Quaternion(0.649406, -0.220955, 0.671699, 0.279772)
+bones/10/rotation = Quaternion(0.663897, -0.257799, 0.658437, 0.243394)
 bones/11/rotation = Quaternion(0.287239, 1.63435e-07, 1.31067e-07, 0.957859)
 bones/11/scale = Vector3(1, 1, 1)
 bones/12/position = Vector3(-0.0562189, 0.0170301, 0.00171231)
-bones/12/rotation = Quaternion(-0.0717631, 0.116545, 0.961401, 0.238697)
+bones/12/rotation = Quaternion(-0.0243244, 0.231255, 0.927517, 0.292645)
 bones/12/scale = Vector3(1, 1, 1)
-bones/13/rotation = Quaternion(-0.230613, -0.0813256, 0.16735, 0.955091)
-bones/14/rotation = Quaternion(0.671901, 0.0383028, 0.0534373, 0.737717)
+bones/13/rotation = Quaternion(-0.374695, -0.0752028, 0.271908, 0.883184)
+bones/14/rotation = Quaternion(0.70426, 0.0035927, 0.0169554, 0.709731)
 bones/14/scale = Vector3(1, 1, 1)
 bones/15/position = Vector3(0.102575, 0.112612, 0.259392)
 bones/15/scale = Vector3(1, 1, 1)
-bones/16/position = Vector3(0.104547, 0.036305, 0.00998281)
+bones/16/position = Vector3(0.104547, 0.0327603, 0.00405972)
 bones/16/rotation = Quaternion(-0.00875622, 0.70983, -0.704263, 0.00882544)
 bones/17/position = Vector3(-0.102575, 0.112612, 0.259392)
 bones/17/scale = Vector3(1, 1, 1)
-bones/18/position = Vector3(-0.104547, 0.0330566, 0.00471145)
+bones/18/position = Vector3(-0.104547, 0.0351621, 0.00921392)
 bones/18/rotation = Quaternion(0.00875622, 0.70983, -0.704263, -0.00882544)
 
 [node name="leafs" type="BoneAttachment3D" parent="player/Armature/Skeleton3D" index="20"]
-transform = Transform3D(0.997854, -0.0382569, 0.0531398, 0.038311, 0.999266, 5.296e-07, -0.0531008, 0.00203531, 0.998587, -0.0107659, 0.692692, 0.000460082)
+transform = Transform3D(0.99981, 0.011126, -0.0159758, -0.0111274, 0.999938, -1.53814e-07, 0.0159748, 0.000177923, 0.999872, 0.00303234, 0.682239, -6.40409e-05)
 bone_name = "leafs"
 bone_idx = 4
 
-[node name="leaf1" parent="player/Armature/Skeleton3D/leafs" instance=ExtResource("3_170er")]
-
-[node name="leaf2" parent="player/Armature/Skeleton3D/leafs" instance=ExtResource("3_170er")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
-
-[node name="leaf3" parent="player/Armature/Skeleton3D/leafs" instance=ExtResource("3_170er")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
-
-[node name="leaf4" parent="player/Armature/Skeleton3D/leafs" instance=ExtResource("3_170er")]
-transform = Transform3D(1.19249e-08, 0, -1, 0, 1, 0, 1, 0, 1.19249e-08, 0, 0, 0)
-
 [node name="laser" parent="player/Armature/Skeleton3D/leafs" instance=ExtResource("4_ob358")]
+
+[node name="leaf_piv" type="Node3D" parent="player/Armature/Skeleton3D/leafs"]
+
+[node name="leaf1" parent="player/Armature/Skeleton3D/leafs/leaf_piv" instance=ExtResource("3_170er")]
+transform = Transform3D(1, -3.52156e-09, 3.72529e-09, 2.61934e-10, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="leaf2" parent="player/Armature/Skeleton3D/leafs/leaf_piv" instance=ExtResource("3_170er")]
+transform = Transform3D(-1, -3.52156e-09, -8.9407e-08, -5.82077e-11, 1, 0, 8.56817e-08, 0, -1, 0, 0, 0)
+
+[node name="leaf3" parent="player/Armature/Skeleton3D/leafs/leaf_piv" instance=ExtResource("3_170er")]
+transform = Transform3D(-4.84288e-08, -3.52156e-09, 1, 0, 1, 1.60071e-10, -1, 0, -4.47035e-08, 0, 0, 0)
+
+[node name="leaf4" parent="player/Armature/Skeleton3D/leafs/leaf_piv" instance=ExtResource("3_170er")]
+transform = Transform3D(1.49012e-08, -3.52156e-09, -1, 0, 1, -2.32831e-10, 1, 0, 1.11759e-08, 0, 0, 0)
 
 [node name="SpringArmPivot" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.598539, 0)

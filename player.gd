@@ -7,10 +7,11 @@ extends CharacterBody3D
 @onready var animation_tree := $AnimationTree
 @onready var mesh := $player/Armature/Skeleton3D
 @onready var leaf_bone = $player/Armature/Skeleton3D/leafs
-@onready var leaf1 = $player/Armature/Skeleton3D/leafs/leaf1
-@onready var leaf2 = $player/Armature/Skeleton3D/leafs/leaf2
-@onready var leaf3 = $player/Armature/Skeleton3D/leafs/leaf3
-@onready var leaf4 = $player/Armature/Skeleton3D/leafs/leaf4
+@onready var leaf1 = $player/Armature/Skeleton3D/leafs/leaf_piv/leaf1
+@onready var leaf2 = $player/Armature/Skeleton3D/leafs/leaf_piv/leaf2
+@onready var leaf3 = $player/Armature/Skeleton3D/leafs/leaf_piv/leaf3
+@onready var leaf4 = $player/Armature/Skeleton3D/leafs/leaf_piv/leaf4
+@onready var leaf_piv = $player/Armature/Skeleton3D/leafs/leaf_piv
 @onready var laser = $player/Armature/Skeleton3D/leafs/laser
 
 const ROLL_SPEED = 1.6
@@ -24,11 +25,15 @@ const CAMERA_LERP_SPEED = 0.1
 const SHOOTING_CAMERA_OFFSET = Vector3(0, 0, -.05)
 const MIN_ZOOM = .1
 const MAX_ZOOM = 1
+const MAX_DIZZINESS = 2.5
+const SPIN_DIZZ_COST = 1.5
+const SPIN_DIZZ_RESET_SPEED = .6
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
 var life = 4
 var life_rendered = 4
+var dizziness = 0
 var action_state = ActionState.IDLE
 var is_rolling = false
 var is_spinning = false
@@ -143,15 +148,26 @@ func _physics_process(delta: float) -> void:
 	elif prev_is_spinning and !is_spinning:
 		action_state = ActionState.IDLE
 	
-	# Allow spinning when not in a restricted state and no animations are playing
+	# Spin top flower based on how dizzy the player is
+	print(dizziness)
+	if dizziness > 0:
+		leaf_piv.rotate_y(delta * dizziness * 5)
+		print(leaf_piv.rotation)
+		dizziness -= SPIN_DIZZ_RESET_SPEED * delta
+		if dizziness < 0:
+			dizziness = 0
+	
 	if Input.is_action_pressed("spin") and action_state != ActionState.ATTACK and not is_rolling:
-		if not is_spinning:  # Only start new spin if we aren't already spinning
-			action_state = ActionState.SPIN
-			is_spinning = true
-			spin_rotation = 0.0
-		# Request new spin animation when current one completes
-		if not animation_tree.get("parameters/spin/active"):
-			animation_tree.set("parameters/spin/request", true)
+		if dizziness < MAX_DIZZINESS:
+			if not is_spinning:  # Only start new spin if we aren't already spinning
+				action_state = ActionState.SPIN
+				is_spinning = true
+				spin_rotation = 0.0
+			# Request new spin animation when current one completes
+			if not animation_tree.get("parameters/spin/active"):
+				dizziness += SPIN_DIZZ_COST
+				animation_tree.set("parameters/spin/request", true)
+		
 	
 	# Reset action state to IDLE when roll animation completes
 	if action_state == ActionState.ROLL and !is_rolling:
