@@ -13,17 +13,17 @@ extends CharacterBody3D
 @onready var leaf4 = $player/Armature/Skeleton3D/leafs/leaf4
 @onready var laser = $player/Armature/Skeleton3D/leafs/laser
 
-const ROLL_SPEED = 6.0
-const SPEED = 5.0
+const ROLL_SPEED = 1.6
+const SPEED = .5
 const LERP_VAL = .15
 const ROLL_ROTATION_SPEED = 10.0
-const ROLL_HEIGHT = 3
+const ROLL_HEIGHT = .3
 const SPIN_ROTATION_SPEED = 15.0
 const ROLL_DURATION = 0.6
 const CAMERA_LERP_SPEED = 0.1
-const SHOOTING_CAMERA_OFFSET = Vector3(1.5, 1.4, 0)
-const MIN_ZOOM = 1
-const MAX_ZOOM = 10
+const SHOOTING_CAMERA_OFFSET = Vector3(0, 0, -.05)
+const MIN_ZOOM = .1
+const MAX_ZOOM = 1
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
@@ -42,6 +42,7 @@ var original_spring_arm_position: Vector3
 var original_spring_arm_rotation: Vector3
 
 func _ready():
+	spring_arm.add_excluded_object(self)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	mesh.rotation = Vector3(0, -PI, 0)
 	initial_mesh_position = mesh.position
@@ -88,16 +89,16 @@ func _unhandled_input(event):
 		get_tree().quit()
 	
 	if Input.is_action_pressed("zoom_in"):
-		if spring_arm.spring_length +.5 > MAX_ZOOM:
+		if spring_arm.spring_length +.1 > MAX_ZOOM:
 			spring_arm.spring_length = MAX_ZOOM
 		else:
-			spring_arm.spring_length += .5
+			spring_arm.spring_length += .1
 	
 	if Input.is_action_pressed("zoom_out"):
-		if spring_arm.spring_length -.5 < MIN_ZOOM:
+		if spring_arm.spring_length -.1 < MIN_ZOOM:
 			spring_arm.spring_length = MIN_ZOOM
 		else:
-			spring_arm.spring_length -= .5
+			spring_arm.spring_length -= .1
 	
 	if Input.is_action_just_pressed("spin") and action_state != ActionState.ROLL:
 		action_state = ActionState.SPIN

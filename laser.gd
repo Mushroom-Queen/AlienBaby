@@ -8,7 +8,7 @@ var charge_timer: SceneTreeTimer = null
 var world: Node
 var player: CharacterBody3D
 var camera: Camera3D
-const PROJECTILE_SPEED := 50.0
+const PROJECTILE_SPEED := 10.0
 const MAX_PROJECTILE_LIFETIME := 2.0
 const CHARGE_TIME := 0.5  # Time in seconds to charge the shot
 var current_bolt = null  # Track the active bolt
