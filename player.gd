@@ -22,6 +22,8 @@ const SPIN_ROTATION_SPEED = 15.0
 const ROLL_DURATION = 0.6
 const CAMERA_LERP_SPEED = 0.1
 const SHOOTING_CAMERA_OFFSET = Vector3(1.5, 1.4, 0)
+const MIN_ZOOM = 1
+const MAX_ZOOM = 10
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
@@ -84,6 +86,18 @@ func update_camera(delta: float) -> void:
 func _unhandled_input(event):
 	if Input.is_action_just_pressed("quit"):
 		get_tree().quit()
+	
+	if Input.is_action_pressed("zoom_in"):
+		if spring_arm.spring_length +.5 > MAX_ZOOM:
+			spring_arm.spring_length = MAX_ZOOM
+		else:
+			spring_arm.spring_length += .5
+	
+	if Input.is_action_pressed("zoom_out"):
+		if spring_arm.spring_length -.5 < MIN_ZOOM:
+			spring_arm.spring_length = MIN_ZOOM
+		else:
+			spring_arm.spring_length -= .5
 	
 	if Input.is_action_just_pressed("spin") and action_state != ActionState.ROLL:
 		action_state = ActionState.SPIN
