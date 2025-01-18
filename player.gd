@@ -28,6 +28,12 @@ const MAX_ZOOM = 1
 const MAX_DIZZINESS = 2.5
 const SPIN_DIZZ_COST = 1.5
 const SPIN_DIZZ_RESET_SPEED = .6
+const DIZZY_SWAY_SPEED = 2.0
+const DIZZY_SWAY_INTENSITY = 0.2
+const DIZZY_POSITION_INTENSITY = 0.05
+var dizzy_time = 0.0
+var camera_original_position: Vector3
+var camera_original_rotation: Vector3
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
@@ -53,6 +59,8 @@ func _ready():
 	initial_mesh_position = mesh.position
 	original_spring_arm_position = spring_arm.position
 	original_spring_arm_rotation = spring_arm.rotation
+	camera_original_position = spring_arm.position
+	camera_original_rotation = spring_arm.rotation
 
 func update_life_leafs():
 	if life != life_rendered:
@@ -84,10 +92,30 @@ func update_life_leafs():
 			leaf4.visable = false
 
 func update_camera(delta: float) -> void:
+	dizzy_time += delta * DIZZY_SWAY_SPEED * (1.0 + dizziness * 0.5)
+	
+	# Calculate base shooting offset if needed
+	var offset = Vector3.ZERO
 	if action_state == ActionState.ATTACK:
-		spring_arm.position = spring_arm.position.lerp(SHOOTING_CAMERA_OFFSET, CAMERA_LERP_SPEED)
+		offset = SHOOTING_CAMERA_OFFSET
+	
+	if dizziness > 0:
+		# Add swaying to the offset rather than absolute positioning
+		offset += Vector3(
+			sin(dizzy_time * 1.3) * DIZZY_POSITION_INTENSITY,
+			cos(dizzy_time * 1.5) * DIZZY_POSITION_INTENSITY,
+			0
+		) * (dizziness / MAX_DIZZINESS)
+		
+		# Add roll sway directly (no lerp)
+		spring_arm.rotation.z = sin(dizzy_time * 0.9) * DIZZY_SWAY_INTENSITY * (dizziness / MAX_DIZZINESS)
 	else:
-		spring_arm.position = spring_arm.position.lerp(original_spring_arm_position, CAMERA_LERP_SPEED)
+		# Just gradually remove roll when not dizzy
+		spring_arm.rotation.z = move_toward(spring_arm.rotation.z, 0.0, delta * 2.0)
+	
+	# Apply any offset smoothly
+	spring_arm.position = spring_arm.position.lerp(offset, CAMERA_LERP_SPEED)
+
 
 func _unhandled_input(event):
 	if Input.is_action_just_pressed("quit"):
@@ -131,7 +159,7 @@ func _unhandled_input(event):
 	if event is InputEventMouseMotion:
 		spring_arm_pivot.rotate_y(-event.relative.x * .005)
 		spring_arm.rotate_x(-event.relative.y * .005)
-		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/4, PI/4)
+		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/3, PI/3)
 
 func _physics_process(delta: float) -> void:
 	update_life_leafs()
