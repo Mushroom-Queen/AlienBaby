@@ -3,3 +3,6 @@
 [ext_resource type="PackedScene" uid="uid://seiph0tdmsy7" path="res://leaf.glb" id="1_ijeim"]
 
 [node name="leaf" instance=ExtResource("1_ijeim")]
+
+[node name="leaf" parent="." index="0"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)

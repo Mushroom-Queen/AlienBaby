@@ -7,28 +7,39 @@ extends CharacterBody3D
 @onready var animation_tree := $AnimationTree
 @onready var mesh := $player/Armature/Skeleton3D
 @onready var leaf_bone = $player/Armature/Skeleton3D/leafs
-@onready var leaf1 = $player/Armature/Skeleton3D/leafs/leaf1
-@onready var leaf2 = $player/Armature/Skeleton3D/leafs/leaf2
-@onready var leaf3 = $player/Armature/Skeleton3D/leafs/leaf3
-@onready var leaf4 = $player/Armature/Skeleton3D/leafs/leaf4
+@onready var leaf1 = $player/Armature/Skeleton3D/leafs/leaf_piv/leaf1
+@onready var leaf2 = $player/Armature/Skeleton3D/leafs/leaf_piv/leaf2
+@onready var leaf3 = $player/Armature/Skeleton3D/leafs/leaf_piv/leaf3
+@onready var leaf4 = $player/Armature/Skeleton3D/leafs/leaf_piv/leaf4
+@onready var leaf_piv = $player/Armature/Skeleton3D/leafs/leaf_piv
 @onready var laser = $player/Armature/Skeleton3D/leafs/laser
 
-const ROLL_SPEED = 6.0
-const SPEED = 5.0
+const ROLL_SPEED = 1.6
+const SPEED = .5
 const LERP_VAL = .15
 const ROLL_ROTATION_SPEED = 10.0
-const ROLL_HEIGHT = 3
+const ROLL_HEIGHT = .3
 const SPIN_ROTATION_SPEED = 15.0
 const ROLL_DURATION = 0.6
 const CAMERA_LERP_SPEED = 0.1
-const SHOOTING_CAMERA_OFFSET = Vector3(1.5, 1.4, 0)
-const MIN_ZOOM = 1
-const MAX_ZOOM = 10
+const SHOOTING_CAMERA_OFFSET = Vector3(0, 0, -.05)
+const MIN_ZOOM = .1
+const MAX_ZOOM = 1
+const MAX_DIZZINESS = 2.5
+const SPIN_DIZZ_COST = 1.5
+const SPIN_DIZZ_RESET_SPEED = .6
+const DIZZY_SWAY_SPEED = 2.0
+const DIZZY_SWAY_INTENSITY = 0.2
+const DIZZY_POSITION_INTENSITY = 0.05
+var dizzy_time = 0.0
+var camera_original_position: Vector3
+var camera_original_rotation: Vector3
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
 var life = 4
 var life_rendered = 4
+var dizziness = 0
 var action_state = ActionState.IDLE
 var is_rolling = false
 var is_spinning = false
@@ -42,11 +53,14 @@ var original_spring_arm_position: Vector3
 var original_spring_arm_rotation: Vector3
 
 func _ready():
+	spring_arm.add_excluded_object(self)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	mesh.rotation = Vector3(0, -PI, 0)
 	initial_mesh_position = mesh.position
 	original_spring_arm_position = spring_arm.position
 	original_spring_arm_rotation = spring_arm.rotation
+	camera_original_position = spring_arm.position
+	camera_original_rotation = spring_arm.rotation
 
 func update_life_leafs():
 	if life != life_rendered:
@@ -78,32 +92,46 @@ func update_life_leafs():
 			leaf4.visable = false
 
 func update_camera(delta: float) -> void:
+	dizzy_time += delta * DIZZY_SWAY_SPEED * (1.0 + dizziness * 0.5)
+	
+	# Calculate base shooting offset if needed
+	var offset = Vector3.ZERO
 	if action_state == ActionState.ATTACK:
-		spring_arm.position = spring_arm.position.lerp(SHOOTING_CAMERA_OFFSET, CAMERA_LERP_SPEED)
+		offset = SHOOTING_CAMERA_OFFSET
+	
+	if dizziness > 0:
+		# Add swaying to the offset rather than absolute positioning
+		offset += Vector3(
+			sin(dizzy_time * 1.3) * DIZZY_POSITION_INTENSITY,
+			cos(dizzy_time * 1.5) * DIZZY_POSITION_INTENSITY,
+			0
+		) * (dizziness / MAX_DIZZINESS)
+		
+		# Add roll sway directly (no lerp)
+		spring_arm.rotation.z = sin(dizzy_time * 0.9) * DIZZY_SWAY_INTENSITY * (dizziness / MAX_DIZZINESS)
 	else:
-		spring_arm.position = spring_arm.position.lerp(original_spring_arm_position, CAMERA_LERP_SPEED)
+		# Just gradually remove roll when not dizzy
+		spring_arm.rotation.z = move_toward(spring_arm.rotation.z, 0.0, delta * 2.0)
+	
+	# Apply any offset smoothly
+	spring_arm.position = spring_arm.position.lerp(offset, CAMERA_LERP_SPEED)
+
 
 func _unhandled_input(event):
 	if Input.is_action_just_pressed("quit"):
 		get_tree().quit()
 	
 	if Input.is_action_pressed("zoom_in"):
-		if spring_arm.spring_length +.5 > MAX_ZOOM:
+		if spring_arm.spring_length +.1 > MAX_ZOOM:
 			spring_arm.spring_length = MAX_ZOOM
 		else:
-			spring_arm.spring_length += .5
+			spring_arm.spring_length += .1
 	
 	if Input.is_action_pressed("zoom_out"):
-		if spring_arm.spring_length -.5 < MIN_ZOOM:
+		if spring_arm.spring_length -.1 < MIN_ZOOM:
 			spring_arm.spring_length = MIN_ZOOM
 		else:
-			spring_arm.spring_length -= .5
-	
-	if Input.is_action_just_pressed("spin") and action_state != ActionState.ROLL:
-		action_state = ActionState.SPIN
-		is_spinning = true
-		spin_rotation = 0.0
-		animation_tree.set("parameters/spin/request", true)
+			spring_arm.spring_length -= .1
 	
 	if Input.is_action_just_pressed("roll") and action_state != ActionState.ATTACK and action_state != ActionState.SPIN:
 		var input_dir := Input.get_vector("left", "right", "forward", "back")
@@ -131,17 +159,46 @@ func _unhandled_input(event):
 	if event is InputEventMouseMotion:
 		spring_arm_pivot.rotate_y(-event.relative.x * .005)
 		spring_arm.rotate_x(-event.relative.y * .005)
-		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/4, PI/4)
+		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/3, PI/3)
 
 func _physics_process(delta: float) -> void:
 	update_life_leafs()
 	update_camera(delta)
 	
+	# Update animation states first
 	is_rolling = animation_tree.get("parameters/roll/active")
 	prev_is_spinning = is_spinning
 	is_spinning = animation_tree.get("parameters/spin/active")
 	
-	if prev_is_spinning and !is_spinning:
+	# Reset states based on animation completion
+	if action_state == ActionState.ROLL and !is_rolling:
+		action_state = ActionState.IDLE
+	elif prev_is_spinning and !is_spinning:
+		action_state = ActionState.IDLE
+	
+	# Spin top flower based on how dizzy the player is
+	print(dizziness)
+	if dizziness > 0:
+		leaf_piv.rotate_y(delta * dizziness * 5)
+		print(leaf_piv.rotation)
+		dizziness -= SPIN_DIZZ_RESET_SPEED * delta
+		if dizziness < 0:
+			dizziness = 0
+	
+	if Input.is_action_pressed("spin") and action_state != ActionState.ATTACK and not is_rolling:
+		if dizziness < MAX_DIZZINESS:
+			if not is_spinning:  # Only start new spin if we aren't already spinning
+				action_state = ActionState.SPIN
+				is_spinning = true
+				spin_rotation = 0.0
+			# Request new spin animation when current one completes
+			if not animation_tree.get("parameters/spin/active"):
+				dizziness += SPIN_DIZZ_COST
+				animation_tree.set("parameters/spin/request", true)
+		
+	
+	# Reset action state to IDLE when roll animation completes
+	if action_state == ActionState.ROLL and !is_rolling:
 		action_state = ActionState.IDLE
 	
 	if not is_on_floor():
@@ -156,6 +213,8 @@ func _physics_process(delta: float) -> void:
 	var direction: Vector3
 	
 	if is_spinning:
+		mesh.rotation = Vector3(0, -PI, 0)
+		mesh.position = initial_mesh_position
 		direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 		direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
 		spin_rotation += SPIN_ROTATION_SPEED * delta
