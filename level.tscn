@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://bbifcfy8xulk7"]
+[gd_scene load_steps=10 format=3 uid="uid://bbifcfy8xulk7"]
 
 [ext_resource type="PackedScene" uid="uid://dqmsn6rv6ppgx" path="res://player.tscn" id="1_55w0c"]
 [ext_resource type="PackedScene" uid="uid://cj2gr1pk6ycu6" path="res://ground_grass_import.tscn" id="2_jx0al"]
 [ext_resource type="PackedScene" uid="uid://div2thil5r16p" path="res://ground_dirt_import.tscn" id="3_urap5"]
 [ext_resource type="PackedScene" uid="uid://b5y0885efv1ss" path="res://ground_trees_import.tscn" id="4_casq8"]
+[ext_resource type="PackedScene" uid="uid://dbdmsxikfyete" path="res://enemy_boss_ship.tscn" id="5_s7o6r"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1viwp"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -18,7 +19,7 @@ sky = SubResource("Sky_aro03")
 tonemap_mode = 2
 glow_enabled = true
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_3pnei"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_kr0ry"]
 size = Vector3(50, 1, 50)
 
 [node name="world" type="Node3D"]
@@ -40,8 +41,11 @@ top_level = true
 
 [node name="ground_trees" parent="." instance=ExtResource("4_casq8")]
 
-[node name="staticBody3D" type="StaticBody3D" parent="."]
+[node name="ground" type="StaticBody3D" parent="."]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="staticBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
-shape = SubResource("BoxShape3D_3pnei")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.505, 0)
+shape = SubResource("BoxShape3D_kr0ry")
+
+[node name="ship" parent="." instance=ExtResource("5_s7o6r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.22829, 0)

@@ -1,0 +1,125 @@
+[gd_scene load_steps=6 format=3 uid="uid://dbdmsxikfyete"]
+
+[ext_resource type="PackedScene" uid="uid://dgnygf6en7fhx" path="res://enemy_boss_ship.glb" id="1_c2iaj"]
+[ext_resource type="Script" path="res://enemy_boss_ship.gd" id="1_f0ikg"]
+[ext_resource type="Material" uid="uid://cdp24dkx2gdck" path="res://materials/gun_glass.tres" id="2_5bbej"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_qkxhw"]
+height = 1.14
+radius = 1.035
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sgwth"]
+size = Vector3(0.5, 0.17, 0.5)
+
+[node name="ship" type="Node3D"]
+script = ExtResource("1_f0ikg")
+
+[node name="core" type="RigidBody3D" parent="."]
+gravity_scale = 0.01
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="core"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.201879, 0)
+shape = SubResource("CylinderShape3D_qkxhw")
+
+[node name="enemy_boss_ship" parent="core" instance=ExtResource("1_c2iaj")]
+transform = Transform3D(0.285, 0, 0, 0, 0.285, 0, 0, 0, 0.285, 0, 0, 0)
+
+[node name="rim" parent="core/enemy_boss_ship" index="0"]
+visible = false
+
+[node name="L1" parent="core/enemy_boss_ship" index="2"]
+surface_material_override/0 = ExtResource("2_5bbej")
+
+[node name="L2" parent="core/enemy_boss_ship" index="3"]
+surface_material_override/0 = ExtResource("2_5bbej")
+
+[node name="L3" parent="core/enemy_boss_ship" index="4"]
+material_override = ExtResource("2_5bbej")
+
+[node name="L4" parent="core/enemy_boss_ship" index="5"]
+material_override = ExtResource("2_5bbej")
+
+[node name="joint" type="PinJoint3D" parent="core"]
+node_a = NodePath("..")
+node_b = NodePath("rim")
+
+[node name="rim" type="RigidBody3D" parent="core/joint"]
+gravity_scale = 0.0
+constant_torque = Vector3(0, 10, 0)
+
+[node name="enemy_boss_ship" parent="core/joint/rim" instance=ExtResource("1_c2iaj")]
+transform = Transform3D(0.35, 0, 0, 0, 0.35, 0, 0, 0, 0.35, 0, 0, 0)
+
+[node name="Main" parent="core/joint/rim/enemy_boss_ship" index="1"]
+visible = false
+
+[node name="L1" parent="core/joint/rim/enemy_boss_ship" index="2"]
+visible = false
+
+[node name="L2" parent="core/joint/rim/enemy_boss_ship" index="3"]
+visible = false
+
+[node name="L3" parent="core/joint/rim/enemy_boss_ship" index="4"]
+visible = false
+
+[node name="L4" parent="core/joint/rim/enemy_boss_ship" index="5"]
+visible = false
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 0, 0.141325, 1.44613)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 0, 0.141325, -1.4341)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(0.25978, 0, -0.965668, 0, 1, 0, 0.965668, 0, 0.25978, -0.718818, 0.141325, 1.25391)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D5" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(0.25978, 0, -0.965668, 0, 1, 0, 0.965668, 0, 0.25978, 0.718818, 0.141325, -1.24188)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D6" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.257858, 0, -0.966183, 0, 1, 0, 0.966183, 0, -0.257858, -1.24646, 0.141325, 0.727313)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D7" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.257858, 0, -0.966183, 0, 1, 0, 0.966183, 0, -0.257858, 1.24646, 0.141325, -0.715286)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D8" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.706403, 0, -0.70781, 0, 1, 0, 0.70781, 0, -0.706403, -1.44012, 0.141325, 0.00744641)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D9" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.706403, 0, -0.70781, 0, 1, 0, 0.70781, 0, -0.706403, 1.44012, 0.141325, 0.00458109)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D10" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.965668, 0, -0.25978, 0, 1, 0, 0.25978, 0, -0.965668, -1.24789, 0.141325, -0.712804)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D11" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.965668, 0, -0.25978, 0, 1, 0, 0.25978, 0, -0.965668, 1.24789, 0.141325, 0.724832)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D12" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.966183, 0, 0.257858, 0, 1, 0, -0.257858, 0, -0.966183, -0.721299, 0.141325, -1.24045)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D13" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.966183, 0, 0.257858, 0, 1, 0, -0.257858, 0, -0.966183, 0.721299, 0.141325, 1.25248)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D14" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.966183, 0, 0.257858, 0, 1, 0, -0.257858, 0, -0.966183, -0.721299, 0.141325, -1.24045)
+shape = SubResource("BoxShape3D_sgwth")
+
+[node name="CollisionShape3D15" type="CollisionShape3D" parent="core/joint/rim"]
+transform = Transform3D(-0.966183, 0, 0.257858, 0, 1, 0, -0.257858, 0, -0.966183, 0.721299, 0.141325, 1.25248)
+shape = SubResource("BoxShape3D_sgwth")
+
+[editable path="core/enemy_boss_ship"]
+[editable path="core/joint/rim/enemy_boss_ship"]
