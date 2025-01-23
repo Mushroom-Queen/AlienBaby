@@ -3,7 +3,11 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
+<<<<<<< HEAD
 uid="uid://do3gb77x85r7r"
+=======
+uid="uid://dgnygf6en7fhx"
+>>>>>>> 83f4d61154dc64664eabe946f84f6a7038408745
 path="res://.godot/imported/enemy_boss_ship.glb-c7c330f1406328cfb8c67d76865040e4.scn"
 
 [deps]

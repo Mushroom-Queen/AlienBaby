@@ -3,7 +3,11 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
+<<<<<<< HEAD
 uid="uid://dut3okcebbbwk"
+=======
+uid="uid://df77ni3scuuj1"
+>>>>>>> 83f4d61154dc64664eabe946f84f6a7038408745
 path="res://.godot/imported/ship_laser.glb-dbbf10ddb7c4ddb733f382060c18b530.scn"
 
 [deps]
