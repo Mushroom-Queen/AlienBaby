@@ -4,13 +4,13 @@
 output_port_for_preview = 0
 parameter_name = "BaseColor"
 default_value_enabled = true
-default_value = Color(0.0417918, 0.156097, 1.20327e-08, 1)
+default_value = Color(0.0320757, 0.152853, 0, 1)
 
 [resource]
 code = "shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_schlick_ggx;
 
-uniform vec4 BaseColor : source_color = vec4(0.041792, 0.156097, 0.000000, 1.000000);
+uniform vec4 BaseColor : source_color = vec4(0.032076, 0.152853, 0.000000, 1.000000);
 
 
 
@@ -26,7 +26,8 @@ void fragment() {
 
 }
 "
+graph_offset = Vector2(-246.78, 32.8343)
 nodes/fragment/0/position = Vector2(860, 20)
 nodes/fragment/7/node = SubResource("VisualShaderNodeColorParameter_dkkah")
-nodes/fragment/7/position = Vector2(380, 60)
+nodes/fragment/7/position = Vector2(220, 0)
 nodes/fragment/connections = PackedInt32Array(7, 0, 0, 0, 7, 0, 0, 9)
