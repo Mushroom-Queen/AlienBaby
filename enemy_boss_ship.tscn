@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://dbdmsxikfyete"]
 
-[ext_resource type="PackedScene" uid="uid://dgnygf6en7fhx" path="res://enemy_boss_ship.glb" id="1_c2iaj"]
+[ext_resource type="PackedScene" uid="uid://cm745krcu6gtw" path="res://enemy_boss_ship.glb" id="1_c2iaj"]
 [ext_resource type="Script" path="res://enemy_boss_ship.gd" id="1_f0ikg"]
 [ext_resource type="Material" uid="uid://cdp24dkx2gdck" path="res://materials/gun_glass.tres" id="2_5bbej"]
 
@@ -15,6 +15,7 @@ size = Vector3(0.5, 0.17, 0.5)
 script = ExtResource("1_f0ikg")
 
 [node name="core" type="RigidBody3D" parent="."]
+mass = 1000.0
 gravity_scale = 0.01
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="core"]
@@ -44,6 +45,7 @@ node_a = NodePath("..")
 node_b = NodePath("rim")
 
 [node name="rim" type="RigidBody3D" parent="core/joint"]
+mass = 500.0
 gravity_scale = 0.0
 constant_torque = Vector3(0, 10, 0)
 

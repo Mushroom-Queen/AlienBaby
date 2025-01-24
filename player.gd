@@ -1,4 +1,4 @@
-extends CharacterBody3D
+extends RigidBody3D
 
 @onready var armature := $player/Armature
 @onready var animation_player := $player/AnimationPlayer
@@ -14,12 +14,11 @@ extends CharacterBody3D
 @onready var leaf_piv = $player/Armature/Skeleton3D/leafs/leaf_piv
 @onready var laser = $player/Armature/Skeleton3D/leafs/laser
 
-const ROLL_SPEED = 1.6
-const SPEED = .5
-const LERP_VAL = .15
-const ROLL_ROTATION_SPEED = 10.0
-const ROLL_HEIGHT = .3
-const SPIN_ROTATION_SPEED = 15.0
+const MOVEMENT_FORCE = 140.0
+const FRICTION_FORCE = 20.0
+const MAX_VELOCITY = 1
+const ROLL_FORCE = 192.0
+const ROLL_FRICTION = 200.0
 const ROLL_DURATION = 0.6
 const CAMERA_LERP_SPEED = 0.1
 const SHOOTING_CAMERA_OFFSET = Vector3(0, 0, -.05)
@@ -27,13 +26,11 @@ const MIN_ZOOM = .1
 const MAX_ZOOM = 1
 const MAX_DIZZINESS = 2.5
 const SPIN_DIZZ_COST = 1.5
-const SPIN_DIZZ_RESET_SPEED = .6
+const SPIN_DIZZ_RESET_SPEED = 0.6
 const DIZZY_SWAY_SPEED = 2.0
 const DIZZY_SWAY_INTENSITY = 0.2
 const DIZZY_POSITION_INTENSITY = 0.05
-var dizzy_time = 0.0
-var camera_original_position: Vector3
-var camera_original_rotation: Vector3
+const LERP_VAL = .15
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
@@ -44,105 +41,73 @@ var action_state = ActionState.IDLE
 var is_rolling = false
 var is_spinning = false
 var roll_direction = Vector3.ZERO
-var initial_roll_rotation = 0.0
 var roll_timer = 0.0
 var initial_mesh_position = Vector3.ZERO
 var spin_rotation = 0.0
 var prev_is_spinning = false
-var original_spring_arm_position: Vector3
-var original_spring_arm_rotation: Vector3
+var dizzy_time = 0.0
+var camera_original_position: Vector3
+var camera_original_rotation: Vector3
 
 func _ready():
+	lock_rotation = true
+	freeze = false
+	gravity_scale = 0.0
+	contact_monitor = true
+	linear_damp = 1.0
+	animation_tree.active = true
+	
 	spring_arm.add_excluded_object(self)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	mesh.rotation = Vector3(0, -PI, 0)
 	initial_mesh_position = mesh.position
-	original_spring_arm_position = spring_arm.position
-	original_spring_arm_rotation = spring_arm.rotation
 	camera_original_position = spring_arm.position
 	camera_original_rotation = spring_arm.rotation
 
 func update_life_leafs():
 	if life != life_rendered:
 		life_rendered = life
-		if life == 4:
-			leaf1.visible = true
-			leaf2.visible = true
-			leaf3.visible = true
-			leaf4.visable = true
-		if life == 3:
-			leaf1.visible = false
-			leaf2.visible = true
-			leaf3.visible = true
-			leaf4.visable = true
-		if life == 2:
-			leaf1.visible = false
-			leaf2.visible = false
-			leaf3.visible = true
-			leaf4.visable = true
-		if life == 1:
-			leaf1.visible = false
-			leaf2.visible = false
-			leaf3.visible = false
-			leaf4.visable = true
-		if life == 0:
-			leaf1.visible = false
-			leaf2.visible = false
-			leaf3.visible = false
-			leaf4.visable = false
+		leaf1.visible = life >= 4
+		leaf2.visible = life >= 3
+		leaf3.visible = life >= 2
+		leaf4.visible = life >= 1
 
 func update_camera(delta: float) -> void:
 	dizzy_time += delta * DIZZY_SWAY_SPEED * (1.0 + dizziness * 0.5)
 	
-	# Calculate base shooting offset if needed
 	var offset = Vector3.ZERO
 	if action_state == ActionState.ATTACK:
 		offset = SHOOTING_CAMERA_OFFSET
 	
 	if dizziness > 0:
-		# Add swaying to the offset rather than absolute positioning
 		offset += Vector3(
 			sin(dizzy_time * 1.3) * DIZZY_POSITION_INTENSITY,
 			cos(dizzy_time * 1.5) * DIZZY_POSITION_INTENSITY,
 			0
 		) * (dizziness / MAX_DIZZINESS)
-		
-		# Add roll sway directly (no lerp)
 		spring_arm.rotation.z = sin(dizzy_time * 0.9) * DIZZY_SWAY_INTENSITY * (dizziness / MAX_DIZZINESS)
 	else:
-		# Just gradually remove roll when not dizzy
 		spring_arm.rotation.z = move_toward(spring_arm.rotation.z, 0.0, delta * 2.0)
 	
-	# Apply any offset smoothly
 	spring_arm.position = spring_arm.position.lerp(offset, CAMERA_LERP_SPEED)
-
 
 func _unhandled_input(event):
 	if Input.is_action_just_pressed("quit"):
 		get_tree().quit()
 	
 	if Input.is_action_pressed("zoom_in"):
-		if spring_arm.spring_length +.1 > MAX_ZOOM:
-			spring_arm.spring_length = MAX_ZOOM
-		else:
-			spring_arm.spring_length += .1
+		spring_arm.spring_length = clamp(spring_arm.spring_length + .1, MIN_ZOOM, MAX_ZOOM)
 	
 	if Input.is_action_pressed("zoom_out"):
-		if spring_arm.spring_length -.1 < MIN_ZOOM:
-			spring_arm.spring_length = MIN_ZOOM
-		else:
-			spring_arm.spring_length -= .1
+		spring_arm.spring_length = clamp(spring_arm.spring_length - .1, MIN_ZOOM, MAX_ZOOM)
 	
-	if Input.is_action_just_pressed("roll") and action_state != ActionState.ATTACK and action_state != ActionState.SPIN:
+	if Input.is_action_just_pressed("roll") and action_state not in [ActionState.ATTACK, ActionState.SPIN]:
 		var input_dir := Input.get_vector("left", "right", "forward", "back")
-		var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-		direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
+		roll_direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		roll_direction = roll_direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
 		
-		if direction.length() > 0.1:
+		if roll_direction.length() > 0.1:
 			action_state = ActionState.ROLL
-			roll_direction = direction
-			armature.rotation.y = atan2(direction.x, direction.z)
-			initial_roll_rotation = armature.rotation.y
 			roll_timer = 0.0
 			animation_tree.set("parameters/roll/request", true)
 	
@@ -150,123 +115,99 @@ func _unhandled_input(event):
 		action_state = ActionState.ATTACK
 		laser.start_firing()
 	
-	if Input.is_action_just_released("attack"):
-		if action_state == ActionState.ATTACK:
-			action_state = ActionState.IDLE
-			animation_tree.set("parameters/shooting/blend_amount", 0.0)
-			laser.stop_firing()
+	if Input.is_action_just_released("attack") and action_state == ActionState.ATTACK:
+		action_state = ActionState.IDLE
+		animation_tree.set("parameters/shooting/blend_amount", 0.0)
+		laser.stop_firing()
 	
 	if event is InputEventMouseMotion:
 		spring_arm_pivot.rotate_y(-event.relative.x * .005)
 		spring_arm.rotate_x(-event.relative.y * .005)
 		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/3, PI/3)
 
-func _physics_process(delta: float) -> void:
+func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	update_life_leafs()
-	update_camera(delta)
 	
-	# Update animation states first
 	is_rolling = animation_tree.get("parameters/roll/active")
 	prev_is_spinning = is_spinning
 	is_spinning = animation_tree.get("parameters/spin/active")
 	
-	# Reset states based on animation completion
+	var current_velocity = state.linear_velocity
+	var current_speed = current_velocity.length()
+	var speed_factor = 1.0 - (current_speed / MAX_VELOCITY)
+	speed_factor = clamp(speed_factor, 0.0, 1.0)
+	
 	if action_state == ActionState.ROLL and !is_rolling:
 		action_state = ActionState.IDLE
+		mesh.rotation = Vector3(0, -PI, 0)
 	elif prev_is_spinning and !is_spinning:
 		action_state = ActionState.IDLE
+		mesh.rotation = Vector3(0, -PI, 0)
 	
-	# Spin top flower based on how dizzy the player is
-	print(dizziness)
 	if dizziness > 0:
-		leaf_piv.rotate_y(delta * dizziness * 5)
-		print(leaf_piv.rotation)
-		dizziness -= SPIN_DIZZ_RESET_SPEED * delta
-		if dizziness < 0:
-			dizziness = 0
+		leaf_piv.rotate_y(state.step * dizziness * 5)
+		dizziness -= SPIN_DIZZ_RESET_SPEED * state.step
+		dizziness = max(dizziness, 0)
 	
 	if Input.is_action_pressed("spin") and action_state != ActionState.ATTACK and not is_rolling:
 		if dizziness < MAX_DIZZINESS:
-			if not is_spinning:  # Only start new spin if we aren't already spinning
+			if not is_spinning:
 				action_state = ActionState.SPIN
 				is_spinning = true
 				spin_rotation = 0.0
-			# Request new spin animation when current one completes
 			if not animation_tree.get("parameters/spin/active"):
 				dizziness += SPIN_DIZZ_COST
 				animation_tree.set("parameters/spin/request", true)
-		
-	
-	# Reset action state to IDLE when roll animation completes
-	if action_state == ActionState.ROLL and !is_rolling:
-		action_state = ActionState.IDLE
-	
-	if not is_on_floor():
-		velocity += get_gravity() * delta
-	
-	if action_state == ActionState.ATTACK:
-		var lerp_to_1 = lerpf(animation_tree.get("parameters/shooting/blend_amount"), 1.0, get_process_delta_time() * 20)
-		animation_tree.set("parameters/shooting/blend_amount", lerp_to_1)
-		armature.rotation.y = spring_arm_pivot.rotation.y
 	
 	var input_dir := Input.get_vector("left", "right", "forward", "back")
-	var direction: Vector3
+	var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
 	
-	if is_spinning:
+	if action_state == ActionState.ATTACK:
+		var lerp_to_1 = lerpf(animation_tree.get("parameters/shooting/blend_amount"), 1.0, state.step * 20)
+		animation_tree.set("parameters/shooting/blend_amount", lerp_to_1)
+		armature.rotation.y = spring_arm_pivot.rotation.y
+		state.apply_central_force(direction * MOVEMENT_FORCE * 0.5)
+	elif is_spinning:
+		spin_rotation += PI * 2 * state.step
+		armature.rotation.y = spin_rotation
+		state.apply_central_force(direction * MOVEMENT_FORCE * 0.2)
+	elif is_rolling:
+		roll_timer += state.step
+		var roll_progress = roll_timer / ROLL_DURATION
+		
+		if roll_timer >= ROLL_DURATION:
+			roll_timer = 0.0
+			action_state = ActionState.IDLE
+		
+		mesh.rotation = Vector3(roll_progress * (2 * PI), -PI, 0)
+		mesh.position = initial_mesh_position + Vector3(0, sin(roll_progress * PI) * 0.3, 0)
+		
+		var roll_force = roll_direction * ROLL_FORCE
+		state.apply_central_force(roll_force)
+	else:
 		mesh.rotation = Vector3(0, -PI, 0)
 		mesh.position = initial_mesh_position
-		direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-		direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
-		spin_rotation += SPIN_ROTATION_SPEED * delta
-		armature.rotation.y = spin_rotation
 		
 		if direction:
-			velocity.x = lerp(velocity.x, direction.x * SPEED * 0.2, LERP_VAL)
-			velocity.z = lerp(velocity.z, direction.z * SPEED * 0.2, LERP_VAL)
+			if action_state == ActionState.IDLE:
+				action_state = ActionState.WALK
+			armature.rotation.y = lerp_angle(armature.rotation.y, atan2(direction.x, direction.z), LERP_VAL)
+			state.apply_central_force(direction * MOVEMENT_FORCE)
 		else:
-			velocity.x = lerp(velocity.x, 0.0, LERP_VAL)
-			velocity.z = lerp(velocity.z, 0.0, LERP_VAL)
-	else:
-		if is_rolling:
-			direction = roll_direction * ROLL_SPEED
-			armature.rotation.y = initial_roll_rotation
-			roll_timer += delta
-			
-			var roll_progress = roll_timer / ROLL_DURATION
-			var rotation_angle = roll_progress * (2 * PI)
-			
-			if roll_timer >= ROLL_DURATION:
-				roll_timer = 0.0
-				mesh.rotation = Vector3(0, -PI, 0)
-				mesh.position = initial_mesh_position
+			if action_state == ActionState.WALK:
 				action_state = ActionState.IDLE
-			else:
-				mesh.rotation = Vector3(rotation_angle, -PI, 0)
-				var height_offset = sin(roll_progress * PI) * ROLL_HEIGHT
-				mesh.position = initial_mesh_position + Vector3(0, height_offset, 0)
-		else:
-			direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-			direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
-			
-			if direction and action_state != ActionState.ATTACK:
-				action_state = ActionState.WALK if action_state == ActionState.IDLE else action_state
-				armature.rotation.y = lerp_angle(armature.rotation.y, atan2(direction.x, direction.z), LERP_VAL)
-			
-			mesh.rotation = Vector3(0, -PI, 0)
-			mesh.position = initial_mesh_position
-		
-		if direction:
-			var target_speed = SPEED
-			if action_state == ActionState.ATTACK:
-				target_speed *= 0.5
-			elif is_rolling:
-				target_speed = ROLL_SPEED
-				
-			velocity.x = lerp(velocity.x, direction.x * target_speed, LERP_VAL)
-			velocity.z = lerp(velocity.z, direction.z * target_speed, LERP_VAL)
-		else:
-			velocity.x = lerp(velocity.x, 0.0, LERP_VAL)
-			velocity.z = lerp(velocity.z, 0.0, LERP_VAL)
 	
-	animation_tree.set("parameters/walk/blend_position", velocity.length() / SPEED)
-	move_and_slide()
+	current_velocity = state.linear_velocity
+	current_velocity = current_velocity.move_toward(Vector3.ZERO, FRICTION_FORCE * state.step)
+	state.linear_velocity = current_velocity
+	
+	# Print debug info
+	print("Action State:", ActionState.keys()[action_state], 
+		  " Velocity:", current_velocity.length(), 
+		  " Speed:", current_velocity.length() / MAX_VELOCITY)
+		
+	animation_tree.set("parameters/walk/blend_position", current_velocity.length() / MAX_VELOCITY)
+
+func _process(delta):
+	update_camera(delta)

@@ -6,7 +6,7 @@ var is_charging := false
 var can_fire := true
 var charge_timer: SceneTreeTimer = null
 var world: Node
-var player: CharacterBody3D
+var player
 var camera: Camera3D
 const PROJECTILE_SPEED := 10.0
 const MAX_PROJECTILE_LIFETIME := 2.0
@@ -14,17 +14,15 @@ const CHARGE_TIME := 0.5  # Time in seconds to charge the shot
 var current_bolt = null  # Track the active bolt
 
 func _ready():
-	var root = get_tree().root
-	world = find_world(root)
-	if world:
-		player = world.get_node_or_null("player")
-		if player:
-			camera = player.get_node_or_null("SpringArmPivot/SpringArm3D/Camera3D")
-			if camera:
-				ray.add_exception(player)
+	world = find_world(get_tree().root)
+	player = world.get_node_or_null("player")
+	if player:
+		camera = player.get_node_or_null("SpringArmPivot/SpringArm3D/Camera3D")
+		if camera:
+			ray.add_exception(player)
 	mesh.visible = false
 
-func find_world(node: Node) -> Node:
+func find_world(node) -> Node:
 	if node.name.to_lower() == "world":
 		return node
 	for child in node.get_children():
