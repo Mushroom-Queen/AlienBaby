@@ -1,14 +1,33 @@
-[gd_scene load_steps=10 format=3 uid="uid://bbifcfy8xulk7"]
+[gd_scene load_steps=15 format=3 uid="uid://bbifcfy8xulk7"]
 
 [ext_resource type="PackedScene" uid="uid://dqmsn6rv6ppgx" path="res://player.tscn" id="1_55w0c"]
 [ext_resource type="PackedScene" uid="uid://cj2gr1pk6ycu6" path="res://ground_grass_import.tscn" id="2_jx0al"]
 [ext_resource type="PackedScene" uid="uid://div2thil5r16p" path="res://ground_dirt_import.tscn" id="3_urap5"]
 [ext_resource type="PackedScene" uid="uid://b5y0885efv1ss" path="res://ground_trees_import.tscn" id="4_casq8"]
 [ext_resource type="PackedScene" uid="uid://dbdmsxikfyete" path="res://enemy_boss_ship.tscn" id="5_s7o6r"]
+[ext_resource type="Material" uid="uid://dg5ah45lvuq0q" path="res://materials/moon.tres" id="6_uygu2"]
+
+[sub_resource type="Gradient" id="Gradient_qd83k"]
+offsets = PackedFloat32Array(0.837662, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_3eiup"]
+noise_type = 3
+frequency = 0.945
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_hbwwr"]
+color_ramp = SubResource("Gradient_qd83k")
+noise = SubResource("FastNoiseLite_3eiup")
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1viwp"]
-sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
-ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+sky_top_color = Color(0, 0.0544884, 0.163861, 1)
+sky_horizon_color = Color(0, 0, 0, 1)
+sky_curve = 0.369344
+sky_cover = SubResource("NoiseTexture2D_hbwwr")
+sky_cover_modulate = Color(0.43, 0.8195, 1, 1)
+ground_bottom_color = Color(0, 0, 0, 1)
+ground_horizon_color = Color(0, 0, 0, 1)
+sun_angle_max = 6.65
+sun_curve = 1e-05
 
 [sub_resource type="Sky" id="Sky_aro03"]
 sky_material = SubResource("ProceduralSkyMaterial_1viwp")
@@ -17,10 +36,20 @@ sky_material = SubResource("ProceduralSkyMaterial_1viwp")
 background_mode = 2
 sky = SubResource("Sky_aro03")
 tonemap_mode = 2
+ssr_enabled = true
+ssao_enabled = true
+ssil_enabled = true
+sdfgi_enabled = true
 glow_enabled = true
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_kr0ry"]
 size = Vector3(50, 1, 50)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_bxsgu"]
+material = ExtResource("6_uygu2")
+top_radius = 0.0
+bottom_radius = 5.0
+height = 0.001
 
 [node name="world" type="Node3D"]
 
@@ -49,3 +78,8 @@ shape = SubResource("BoxShape3D_kr0ry")
 
 [node name="ship" parent="." instance=ExtResource("5_s7o6r")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.22829, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, 68, 0)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_bxsgu")
