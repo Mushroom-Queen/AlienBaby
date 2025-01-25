@@ -35,6 +35,9 @@ const DIZZY_SWAY_SPEED = 2.0
 const DIZZY_SWAY_INTENSITY = 0.2
 const DIZZY_POSITION_INTENSITY = 0.05
 const LERP_VAL = .15
+const SPIN_POWER = 20.0
+const SPIN_ANGULAR_DAMP = 1.0
+const MAX_ANGULAR_VELOCITY = 20.0
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
@@ -47,7 +50,6 @@ var is_spinning = false
 var roll_direction = Vector3.ZERO
 var roll_timer = 0.0
 var initial_mesh_position = Vector3.ZERO
-var spin_rotation = 0.0
 var prev_is_spinning = false
 var dizzy_time = 0.0
 var camera_original_position: Vector3
@@ -58,6 +60,8 @@ func _ready():
 	freeze = false
 	contact_monitor = true
 	linear_damp = 1.0
+	angular_damp = 0.0
+	can_sleep = false
 	animation_tree.active = true
 	
 	spring_arm.add_excluded_object(self)
@@ -151,16 +155,30 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		leaf_piv.rotate_y(state.step * dizziness * 5)
 		dizziness -= SPIN_DIZZ_RESET_SPEED * state.step
 		dizziness = max(dizziness, 0)
+		transform.basis = transform.basis.rotated(Vector3.FORWARD, -transform.basis.get_euler().x * 0.1)
+		transform.basis = transform.basis.rotated(Vector3.RIGHT, -transform.basis.get_euler().z * 0.1)
 	
 	if Input.is_action_pressed("spin") and action_state != ActionState.ATTACK and not is_rolling:
 		if dizziness < MAX_DIZZINESS:
 			if not is_spinning:
 				action_state = ActionState.SPIN
 				is_spinning = true
-				spin_rotation = 0.0
+				lock_rotation = false
+				transform.basis = Basis.IDENTITY
 			if not animation_tree.get("parameters/spin/active"):
 				dizziness += SPIN_DIZZ_COST
 				animation_tree.set("parameters/spin/request", true)
+				state.angular_velocity = Vector3(0, SPIN_POWER, 0)
+	elif action_state != ActionState.SPIN and not lock_rotation:
+		lock_rotation = true
+		angular_damp = SPIN_ANGULAR_DAMP
+		spring_arm_pivot.rotation.y = -transform.basis.get_euler().y
+		transform.basis = Basis.IDENTITY.rotated(Vector3.UP, PI)
+		state.angular_velocity = Vector3.ZERO
+	
+	if not lock_rotation:
+		state.angular_velocity.x = 0
+		state.angular_velocity.z = 0
 	
 	var input_dir := Input.get_vector("left", "right", "forward", "back")
 	var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
@@ -172,8 +190,6 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		armature.rotation.y = spring_arm_pivot.rotation.y
 		state.apply_central_force(direction * MOVEMENT_FORCE * 0.5)
 	elif is_spinning:
-		spin_rotation += PI * 2 * state.step
-		armature.rotation.y = spin_rotation
 		state.apply_central_force(direction * MOVEMENT_FORCE * 0.2)
 	elif is_rolling:
 		roll_timer += state.step
@@ -205,10 +221,10 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	current_velocity = current_velocity.move_toward(Vector3.ZERO, FRICTION_FORCE * state.step)
 	state.linear_velocity = current_velocity
 	
-	# Print debug info
 	print("Action State:", ActionState.keys()[action_state], 
 		  " Velocity:", current_velocity.length(), 
-		  " Speed:", current_velocity.length() / MAX_VELOCITY)
+		  " Speed:", current_velocity.length() / MAX_VELOCITY,
+		  " Angular Velocity:", state.angular_velocity.y)
 		
 	animation_tree.set("parameters/walk/blend_position", current_velocity.length() / MAX_VELOCITY)
 
