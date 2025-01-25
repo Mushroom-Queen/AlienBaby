@@ -13,9 +13,13 @@ extends RigidBody3D
 @onready var leaf4 = $player/Armature/Skeleton3D/leafs/leaf_piv/leaf4
 @onready var leaf_piv = $player/Armature/Skeleton3D/leafs/leaf_piv
 @onready var laser = $player/Armature/Skeleton3D/leafs/laser
+@onready var collision_left = $CollisionShapeLeft
+@onready var collision_right = $CollisionShapeRight
+@onready var arm_bone_left = $player/Armature/Skeleton3D/left_arm
+@onready var arm_bone_right = $player/Armature/Skeleton3D/right_arm
 
 const MOVEMENT_FORCE = 140.0
-const FRICTION_FORCE = 20.0
+const FRICTION_FORCE = 10.0
 const MAX_VELOCITY = 1
 const ROLL_FORCE = 192.0
 const ROLL_FRICTION = 200.0
@@ -52,7 +56,6 @@ var camera_original_rotation: Vector3
 func _ready():
 	lock_rotation = true
 	freeze = false
-	gravity_scale = 0.0
 	contact_monitor = true
 	linear_damp = 1.0
 	animation_tree.active = true
@@ -210,4 +213,8 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	animation_tree.set("parameters/walk/blend_position", current_velocity.length() / MAX_VELOCITY)
 
 func _process(delta):
+	collision_left.global_position = arm_bone_left.global_position
+	collision_left.global_rotation = arm_bone_left.global_rotation
+	collision_right.global_position = arm_bone_right.global_position
+	collision_right.global_rotation = arm_bone_right.global_rotation
 	update_camera(delta)

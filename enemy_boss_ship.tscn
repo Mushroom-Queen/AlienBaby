@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://dbdmsxikfyete"]
 
-[ext_resource type="PackedScene" uid="uid://cm745krcu6gtw" path="res://enemy_boss_ship.glb" id="1_c2iaj"]
+[ext_resource type="PackedScene" uid="uid://55fe4rlclskr" path="res://enemy_boss_ship.glb" id="1_c2iaj"]
 [ext_resource type="Script" path="res://enemy_boss_ship.gd" id="1_f0ikg"]
 [ext_resource type="Material" uid="uid://cdp24dkx2gdck" path="res://materials/gun_glass.tres" id="2_5bbej"]
 
