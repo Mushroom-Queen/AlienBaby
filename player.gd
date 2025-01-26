@@ -29,15 +29,17 @@ const SHOOTING_CAMERA_OFFSET = Vector3(0, 0, -.05)
 const MIN_ZOOM = .1
 const MAX_ZOOM = 1
 const MAX_DIZZINESS = 2.5
-const SPIN_DIZZ_COST = 1.5
+const SPIN_DIZZ_COST = 0.0
+const POST_SPIN_DIZZ_COST = 2.5
 const SPIN_DIZZ_RESET_SPEED = 0.6
 const DIZZY_SWAY_SPEED = 2.0
 const DIZZY_SWAY_INTENSITY = 0.2
 const DIZZY_POSITION_INTENSITY = 0.05
 const LERP_VAL = .15
-const SPIN_POWER = 20.0
+const SPIN_POWER = 40.0
 const SPIN_ANGULAR_DAMP = 1.0
-const MAX_ANGULAR_VELOCITY = 20.0
+const MAX_ANGULAR_VELOCITY = 40.0
+const SPIN_RESET_TIME = 2.0
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
@@ -54,6 +56,8 @@ var prev_is_spinning = false
 var dizzy_time = 0.0
 var camera_original_position: Vector3
 var camera_original_rotation: Vector3
+var spin_count = 0
+var spin_timeout = 0.0
 
 func _ready():
 	lock_rotation = true
@@ -63,6 +67,8 @@ func _ready():
 	angular_damp = 0.0
 	can_sleep = false
 	animation_tree.active = true
+	spring_arm_pivot.top_level = true
+	spring_arm_pivot.position.y = -0.5
 	
 	spring_arm.add_excluded_object(self)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -80,6 +86,8 @@ func update_life_leafs():
 		leaf4.visible = life >= 1
 
 func update_camera(delta: float) -> void:
+	spring_arm_pivot.global_position = global_position + Vector3(0, -0.5, 0)
+	
 	dizzy_time += delta * DIZZY_SWAY_SPEED * (1.0 + dizziness * 0.5)
 	
 	var offset = Vector3.ZERO
@@ -110,7 +118,7 @@ func _unhandled_input(event):
 	
 	if Input.is_action_just_pressed("roll") and action_state not in [ActionState.ATTACK, ActionState.SPIN]:
 		var input_dir := Input.get_vector("left", "right", "forward", "back")
-		roll_direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		roll_direction = Vector3(input_dir.x, 0, input_dir.y).normalized()
 		roll_direction = roll_direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
 		
 		if roll_direction.length() > 0.1:
@@ -147,12 +155,20 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	if action_state == ActionState.ROLL and !is_rolling:
 		action_state = ActionState.IDLE
 		mesh.rotation = Vector3(0, -PI, 0)
-	elif prev_is_spinning and !is_spinning:
+	elif prev_is_spinning and !is_spinning:  # When spin ends
+		spin_count += 1
+		if spin_count >= 2:
+			dizziness = min(dizziness + POST_SPIN_DIZZ_COST, MAX_DIZZINESS)
+			spin_count = 0
 		action_state = ActionState.IDLE
 		mesh.rotation = Vector3(0, -PI, 0)
+		mesh.position = initial_mesh_position
+		lock_rotation = true
+		angular_damp = SPIN_ANGULAR_DAMP
+		transform.basis = Basis.IDENTITY.rotated(Vector3.UP, PI)
+		state.angular_velocity = Vector3.ZERO
 	
 	if dizziness > 0:
-		leaf_piv.rotate_y(state.step * dizziness * 5)
 		dizziness -= SPIN_DIZZ_RESET_SPEED * state.step
 		dizziness = max(dizziness, 0)
 		transform.basis = transform.basis.rotated(Vector3.FORWARD, -transform.basis.get_euler().x * 0.1)
@@ -165,24 +181,26 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 				is_spinning = true
 				lock_rotation = false
 				transform.basis = Basis.IDENTITY
+				mesh.position.y += 0.15
+				spin_timeout = SPIN_RESET_TIME
 			if not animation_tree.get("parameters/spin/active"):
-				dizziness += SPIN_DIZZ_COST
 				animation_tree.set("parameters/spin/request", true)
 				state.angular_velocity = Vector3(0, SPIN_POWER, 0)
-	elif action_state != ActionState.SPIN and not lock_rotation:
-		lock_rotation = true
-		angular_damp = SPIN_ANGULAR_DAMP
-		spring_arm_pivot.rotation.y = -transform.basis.get_euler().y
-		transform.basis = Basis.IDENTITY.rotated(Vector3.UP, PI)
-		state.angular_velocity = Vector3.ZERO
+	
+	# Reset spin count after timeout
+	if spin_timeout > 0:
+		spin_timeout -= state.step
+		if spin_timeout <= 0:
+			spin_count = 0
 	
 	if not lock_rotation:
 		state.angular_velocity.x = 0
 		state.angular_velocity.z = 0
 	
 	var input_dir := Input.get_vector("left", "right", "forward", "back")
-	var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
+	var direction = Vector3(input_dir.x, 0, input_dir.y).normalized()
+	if not is_spinning:
+		direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
 	
 	if action_state == ActionState.ATTACK:
 		var lerp_to_1 = lerpf(animation_tree.get("parameters/shooting/blend_amount"), 1.0, state.step * 20)
@@ -224,7 +242,9 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	print("Action State:", ActionState.keys()[action_state], 
 		  " Velocity:", current_velocity.length(), 
 		  " Speed:", current_velocity.length() / MAX_VELOCITY,
-		  " Angular Velocity:", state.angular_velocity.y)
+		  " Angular Velocity:", state.angular_velocity.y,
+		  " Spin Count:", spin_count,
+		  " Spin Timeout:", spin_timeout)
 		
 	animation_tree.set("parameters/walk/blend_position", current_velocity.length() / MAX_VELOCITY)
 
