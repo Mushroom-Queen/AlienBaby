@@ -40,10 +40,12 @@ const SPIN_POWER = 40.0
 const SPIN_ANGULAR_DAMP = 1.0
 const MAX_ANGULAR_VELOCITY = 40.0
 const SPIN_RESET_TIME = 2.0
+const CANT_TOUCH_THIS_TIME = .5
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
 var life = 4
+var hurt_counter = 0
 var life_rendered = 4
 var dizziness = 0
 var action_state = ActionState.IDLE
@@ -105,6 +107,17 @@ func update_camera(delta: float) -> void:
 		spring_arm.rotation.z = move_toward(spring_arm.rotation.z, 0.0, delta * 2.0)
 	
 	spring_arm.position = spring_arm.position.lerp(offset, CAMERA_LERP_SPEED)
+
+func hurt():
+	if hurt_counter > 0:
+		print("Can't touch this")
+		return
+	hurt_counter = CANT_TOUCH_THIS_TIME
+	life -= 1
+
+func update_hurt_counter(delta):
+	if hurt_counter > 0:
+		hurt_counter -= delta
 
 func _unhandled_input(event):
 	if Input.is_action_just_pressed("quit"):
@@ -205,7 +218,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	if action_state == ActionState.ATTACK:
 		var lerp_to_1 = lerpf(animation_tree.get("parameters/shooting/blend_amount"), 1.0, state.step * 20)
 		animation_tree.set("parameters/shooting/blend_amount", lerp_to_1)
-		armature.rotation.y = spring_arm_pivot.rotation.y
+		armature.rotation.y = spring_arm_pivot.rotation.y + PI
 		state.apply_central_force(direction * MOVEMENT_FORCE * 0.5)
 	elif is_spinning:
 		state.apply_central_force(direction * MOVEMENT_FORCE * 0.2)
@@ -254,3 +267,4 @@ func _process(delta):
 	collision_right.global_position = arm_bone_right.global_position
 	collision_right.global_rotation = arm_bone_right.global_rotation
 	update_camera(delta)
+	update_hurt_counter(delta)
