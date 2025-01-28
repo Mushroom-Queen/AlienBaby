@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://de8874krjiu4v" path="res://ground_trees.glb" id="1_eqgh8"]
 [ext_resource type="Shader" uid="uid://c31keh8yaju3w" path="res://under_grass.tres" id="2_24jo6"]
-[ext_resource type="PackedScene" uid="uid://cfn4nqkgyut7s" path="res://tree.tscn" id="3_ysw2w"]
+[ext_resource type="PackedScene" uid="uid://fam0pq5mr3b8" path="res://tree.tscn" id="3_ysw2w"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fatg1"]
 render_priority = 0

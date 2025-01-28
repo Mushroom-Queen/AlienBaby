@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=4 uid="uid://cfn4nqkgyut7s"]
+[gd_scene load_steps=9 format=4 uid="uid://fam0pq5mr3b8"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dunfm"]
 resource_name = "firtree.001"
@@ -79,7 +79,7 @@ radius = 0.74
 radius = 1.05
 
 [node name="tree" type="RigidBody3D"]
-mass = 1000.0
+mass = 4000.0
 
 [node name="fir_tree" type="MeshInstance3D" parent="."]
 mesh = SubResource("ArrayMesh_g1i2k")
