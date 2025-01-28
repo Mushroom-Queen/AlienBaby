@@ -251,13 +251,6 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	current_velocity = state.linear_velocity
 	current_velocity = current_velocity.move_toward(Vector3.ZERO, FRICTION_FORCE * state.step)
 	state.linear_velocity = current_velocity
-	
-	print("Action State:", ActionState.keys()[action_state], 
-		  " Velocity:", current_velocity.length(), 
-		  " Speed:", current_velocity.length() / MAX_VELOCITY,
-		  " Angular Velocity:", state.angular_velocity.y,
-		  " Spin Count:", spin_count,
-		  " Spin Timeout:", spin_timeout)
 		
 	animation_tree.set("parameters/walk/blend_position", current_velocity.length() / MAX_VELOCITY)
 
