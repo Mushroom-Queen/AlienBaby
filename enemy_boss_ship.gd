@@ -17,6 +17,12 @@ var can_shoot := true
 var shoot_timer := 0.0
 var current_bolt = null
 
+# Lightning bolt specific constants
+const SEGMENTS = 6  # Number of segments in the lightning bolt
+const SEGMENT_LENGTH = 0.15  # Length of each segment
+const DEVIATION = 0.1  # Maximum random deviation for each segment
+const BOLT_WIDTH = 0.05  # Width of the lightning bolt
+
 # Existing constants
 const push_multiplier = 7
 const HOVER_HEIGHT = 3.0
@@ -144,7 +150,6 @@ func attempt_shoot() -> void:
 	var timer = get_tree().create_timer(SHOOT_COOLDOWN)
 	timer.timeout.connect(func(): can_shoot = true)
 
-# Add this new function to select the best gun
 func get_best_gun() -> Node3D:
 	if not player:
 		return gun_1  # Default to gun_1 if no player
@@ -179,50 +184,95 @@ func spawn_bolt() -> void:
 	# Get the best positioned gun
 	var firing_gun = get_best_gun()
 	
-	# Create bolt
+	# Create main bolt node
 	var bolt_body = RigidBody3D.new()
 	bolt_body.mass = BOLT_MASS
 	bolt_body.gravity_scale = 0.1
 	
-	# Create collision shape for RigidBody (smaller than Area3D)
-	var collision = CollisionShape3D.new()
-	var capsule_shape = CapsuleShape3D.new()
-	capsule_shape.radius = 0.15  # Slightly smaller for physical collisions
-	capsule_shape.height = 0.8
-	collision.shape = capsule_shape
-	bolt_body.add_child(collision)
+	# Create the lightning bolt mesh
+	var st = SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	
-	# Create Area3D for damage detection
-	var damage_area = Area3D.new()
-	damage_area.name = "DamageArea"
+	# Generate lightning bolt vertices
+	var points = []
+	var current_point = Vector3.ZERO
+	points.append(current_point)
 	
-	# Create collision shape for Area3D (slightly larger than RigidBody)
-	var area_collision = CollisionShape3D.new()
-	var area_shape = CapsuleShape3D.new()
-	area_shape.radius = 0.25  # Slightly larger for better hit detection
-	area_shape.height = 1.0
-	area_collision.shape = area_shape
-	damage_area.add_child(area_collision)
+	# Generate zigzag pattern
+	for i in range(SEGMENTS):
+		var next_point = current_point + Vector3(
+			randf_range(-DEVIATION, DEVIATION),
+			randf_range(-DEVIATION, DEVIATION),
+			-SEGMENT_LENGTH
+		)
+		points.append(next_point)
+		current_point = next_point
 	
-	# Add Area3D to bolt
-	bolt_body.add_child(damage_area)
+	# Create the mesh geometry
+	for i in range(len(points) - 1):
+		var start = points[i]
+		var end = points[i + 1]
+		var direction = (end - start).normalized()
+		var perpendicular = direction.cross(Vector3.FORWARD).normalized()
+		
+		# Calculate vertices for this segment
+		var v1 = start + perpendicular * BOLT_WIDTH
+		var v2 = start - perpendicular * BOLT_WIDTH
+		var v3 = end + perpendicular * BOLT_WIDTH
+		var v4 = end - perpendicular * BOLT_WIDTH
+		
+		# Add vertices with UV coordinates
+		st.set_uv(Vector2(0, float(i) / SEGMENTS))
+		st.add_vertex(v1)
+		st.set_uv(Vector2(1, float(i) / SEGMENTS))
+		st.add_vertex(v2)
+		st.set_uv(Vector2(0, float(i + 1) / SEGMENTS))
+		st.add_vertex(v3)
+		st.set_uv(Vector2(1, float(i + 1) / SEGMENTS))
+		st.add_vertex(v4)
+		
+		# Add triangles
+		var base_idx = i * 4
+		st.add_index(base_idx)
+		st.add_index(base_idx + 1)
+		st.add_index(base_idx + 2)
+		st.add_index(base_idx + 1)
+		st.add_index(base_idx + 3)
+		st.add_index(base_idx + 2)
 	
-	# Create mesh
+	# Create the mesh instance
 	var bolt_mesh = MeshInstance3D.new()
-	var mesh_resource = CylinderMesh.new()
-	mesh_resource.top_radius = 0.2
-	mesh_resource.bottom_radius = 0.2
-	mesh_resource.height = 1.0
-	bolt_mesh.mesh = mesh_resource
+	bolt_mesh.mesh = st.commit()
 	
 	# Create material
 	var material = StandardMaterial3D.new()
-	material.albedo_color = Color(1, 0.5, 0, 1)  # Orange color
+	material.albedo_color = Color(0.3, 0.7, 1.0, 1.0)  # Light blue color
 	material.emission_enabled = true
-	material.emission = Color(1, 0.5, 0, 1)
-	material.emission_energy_multiplier = 2.0
+	material.emission = Color(0.3, 0.7, 1.0, 1.0)
+	material.emission_energy_multiplier = 4.0
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	bolt_mesh.material_override = material
 	
+	# Create collision shape
+	var collision = CollisionShape3D.new()
+	var capsule_shape = CapsuleShape3D.new()
+	capsule_shape.radius = BOLT_WIDTH
+	capsule_shape.height = SEGMENT_LENGTH * SEGMENTS
+	collision.shape = capsule_shape
+	bolt_body.add_child(collision)
+	
+	# Create damage area
+	var damage_area = Area3D.new()
+	damage_area.name = "DamageArea"
+	var area_collision = CollisionShape3D.new()
+	var area_shape = CapsuleShape3D.new()
+	area_shape.radius = BOLT_WIDTH * 2
+	area_shape.height = SEGMENT_LENGTH * SEGMENTS
+	area_collision.shape = area_shape
+	damage_area.add_child(area_collision)
+	bolt_body.add_child(damage_area)
+	
+	# Add mesh to bolt
 	bolt_body.add_child(bolt_mesh)
 	
 	# Setup physics
@@ -233,26 +283,29 @@ func spawn_bolt() -> void:
 	# Add metadata for lifetime tracking
 	bolt_body.set_meta("spawn_time", Time.get_unix_time_from_system())
 	
-	# Add to scene and position at the firing gun
+	# Add to scene and position
 	world.add_child(bolt_body)
 	bolt_body.global_position = firing_gun.global_position
 	
-	# Look at player from the gun position
+	# Look at player
 	bolt_body.look_at(player.global_position)
-	bolt_body.rotate_object_local(Vector3.RIGHT, PI/2)
 	
 	# Connect Area3D signals
 	damage_area.body_entered.connect(_on_bolt_area_entered.bind(bolt_body))
 	
 	current_bolt = bolt_body
+	
+	# Add animation
+	var tween = create_tween()
+	tween.tween_property(material, "emission_energy_multiplier", 0.5, 0.1)
+	tween.tween_property(material, "emission_energy_multiplier", 4.0, 0.1)
+	tween.set_loops()
 
-# New collision handler for Area3D
 func _on_bolt_area_entered(body: Node3D, bolt: RigidBody3D) -> void:
 	if body == player:
 		player.hurt()  # Call player's hurt method
 		bolt.queue_free()
 		current_bolt = null
-		
 
 func start_charge_attack() -> void:
 	current_state = PREPARING_CHARGE

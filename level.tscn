@@ -79,6 +79,7 @@ transform = Transform3D(-1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, -1, 0, 1.1
 top_level = true
 
 [node name="ground_grass2" parent="." instance=ExtResource("2_jx0al")]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="ground_dirt2" parent="." instance=ExtResource("3_urap5")]
 

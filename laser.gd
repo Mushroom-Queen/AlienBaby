@@ -2,17 +2,17 @@ extends Node3D
 
 @onready var ray := $RayCast3D
 @onready var mesh := $MeshInstance3D
-var is_charging := false
-var can_fire := true
-var charge_timer: SceneTreeTimer = null
+
 var world: Node
 var player
 var camera: Camera3D
+var can_fire := true
+var current_bolt = null
+
 const PROJECTILE_SPEED := 6.0
 const MAX_PROJECTILE_LIFETIME := 2.0
-const CHARGE_TIME := 0.5
 const BOLT_MASS := 100.0
-var current_bolt = null
+const FIRE_RATE := 0.5  # 2 shots per second (1/2 = 0.5 seconds between shots)
 
 func _ready():
 	world = find_world(get_tree().root)
@@ -32,36 +32,14 @@ func find_world(node) -> Node:
 			return found
 	return null
 
-func start_charging():
-	if can_fire and world:
-		is_charging = true
-		can_fire = false
-		charge_timer = get_tree().create_timer(CHARGE_TIME)
-		charge_timer.timeout.connect(fire_charged_bolt)
-
 func start_firing():
-	start_charging()
-
-func stop_firing():
-	stop_charging()
-
-func stop_charging():
-	if is_charging:
-		is_charging = false
-		can_fire = true
-		if charge_timer and is_instance_valid(charge_timer):
-			if charge_timer.timeout.is_connected(fire_charged_bolt):
-				charge_timer.timeout.disconnect(fire_charged_bolt)
-		charge_timer = null
-
-func fire_charged_bolt():
-	if is_charging:
-		spawn_bolt()
-		is_charging = false
-		var cooldown_timer = get_tree().create_timer(0.2)
+	if can_fire and world:
+		fire_bolt()
+		can_fire = false
+		var cooldown_timer = get_tree().create_timer(FIRE_RATE)
 		cooldown_timer.timeout.connect(func(): can_fire = true)
 
-func spawn_bolt():
+func fire_bolt():
 	if not world:
 		return
 		
@@ -105,7 +83,6 @@ func spawn_bolt():
 
 func _on_bolt_collision(body: Node3D, bolt: RigidBody3D):
 	if body != player:  # Ignore collisions with player
-		# Add impact effects here if desired
 		bolt.queue_free()
 		current_bolt = null
 

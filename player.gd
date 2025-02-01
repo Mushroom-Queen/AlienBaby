@@ -41,6 +41,7 @@ const SPIN_ANGULAR_DAMP = 1.0
 const MAX_ANGULAR_VELOCITY = 40.0
 const SPIN_RESET_TIME = 2.0
 const CANT_TOUCH_THIS_TIME = .5
+const ATTACK_DURATION = 0.2  # Duration to stay in attack state after firing
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
@@ -60,6 +61,7 @@ var camera_original_position: Vector3
 var camera_original_rotation: Vector3
 var spin_count = 0
 var spin_timeout = 0.0
+var attack_timer = 0.0
 
 func _ready():
 	lock_rotation = true
@@ -141,12 +143,9 @@ func _unhandled_input(event):
 	
 	if Input.is_action_just_pressed("attack") and action_state != ActionState.SPIN:
 		action_state = ActionState.ATTACK
+		attack_timer = ATTACK_DURATION
+		animation_tree.set("parameters/shooting/blend_amount", 1.0)
 		laser.start_firing()
-	
-	if Input.is_action_just_released("attack") and action_state == ActionState.ATTACK:
-		action_state = ActionState.IDLE
-		animation_tree.set("parameters/shooting/blend_amount", 0.0)
-		laser.stop_firing()
 	
 	if event is InputEventMouseMotion:
 		spring_arm_pivot.rotate_y(-event.relative.x * .005)
@@ -159,6 +158,13 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	is_rolling = animation_tree.get("parameters/roll/active")
 	prev_is_spinning = is_spinning
 	is_spinning = animation_tree.get("parameters/spin/active")
+	
+	# Update attack timer and state
+	if action_state == ActionState.ATTACK:
+		attack_timer -= state.step
+		if attack_timer <= 0:
+			action_state = ActionState.IDLE
+			animation_tree.set("parameters/shooting/blend_amount", 0.0)
 	
 	var current_velocity = state.linear_velocity
 	var current_speed = current_velocity.length()
@@ -216,8 +222,6 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		direction = direction.rotated(Vector3.UP, spring_arm_pivot.rotation.y)
 	
 	if action_state == ActionState.ATTACK:
-		var lerp_to_1 = lerpf(animation_tree.get("parameters/shooting/blend_amount"), 1.0, state.step * 20)
-		animation_tree.set("parameters/shooting/blend_amount", lerp_to_1)
 		armature.rotation.y = spring_arm_pivot.rotation.y + PI
 		state.apply_central_force(direction * MOVEMENT_FORCE * 0.5)
 	elif is_spinning:
