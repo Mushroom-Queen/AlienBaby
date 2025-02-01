@@ -1,8 +1,14 @@
-[gd_scene load_steps=2 format=3 uid="uid://cpl5phpdfqy26"]
+[gd_scene load_steps=3 format=3 uid="uid://cpl5phpdfqy26"]
 
 [ext_resource type="PackedScene" uid="uid://seiph0tdmsy7" path="res://leaf.glb" id="1_ijeim"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_aoxsx"]
+albedo_color = Color(0, 0.415686, 0, 1)
+emission_enabled = true
+emission = Color(0, 0.596078, 0, 1)
 
 [node name="leaf" instance=ExtResource("1_ijeim")]
 
 [node name="leaf" parent="." index="0"]
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_aoxsx")
