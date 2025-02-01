@@ -1,9 +1,8 @@
-[gd_scene load_steps=19 format=3 uid="uid://bbifcfy8xulk7"]
+[gd_scene load_steps=18 format=3 uid="uid://bbifcfy8xulk7"]
 
 [ext_resource type="PackedScene" uid="uid://dqmsn6rv6ppgx" path="res://player.tscn" id="1_55w0c"]
 [ext_resource type="PackedScene" uid="uid://cj2gr1pk6ycu6" path="res://ground_grass_import.tscn" id="2_jx0al"]
 [ext_resource type="PackedScene" uid="uid://div2thil5r16p" path="res://ground_dirt_import.tscn" id="3_urap5"]
-[ext_resource type="PackedScene" uid="uid://b5y0885efv1ss" path="res://ground_trees_import.tscn" id="4_casq8"]
 [ext_resource type="Material" uid="uid://cu88gmtcasker" path="res://materials/far_grass.tres" id="5_isp2k"]
 [ext_resource type="PackedScene" uid="uid://dbdmsxikfyete" path="res://enemy_boss_ship.tscn" id="5_s7o6r"]
 [ext_resource type="Material" uid="uid://dg5ah45lvuq0q" path="res://materials/moon.tres" id="6_uygu2"]
@@ -82,8 +81,6 @@ top_level = true
 [node name="ground_grass2" parent="." instance=ExtResource("2_jx0al")]
 
 [node name="ground_dirt2" parent="." instance=ExtResource("3_urap5")]
-
-[node name="ground_trees" parent="." instance=ExtResource("4_casq8")]
 
 [node name="ground" type="StaticBody3D" parent="."]
 
