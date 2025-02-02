@@ -1,6 +1,7 @@
-[gd_scene load_steps=20 format=3 uid="uid://bbifcfy8xulk7"]
+[gd_scene load_steps=21 format=3 uid="uid://bbifcfy8xulk7"]
 
 [ext_resource type="PackedScene" uid="uid://dqmsn6rv6ppgx" path="res://player.tscn" id="1_55w0c"]
+[ext_resource type="Script" path="res://level.gd" id="1_rsrvi"]
 [ext_resource type="PackedScene" uid="uid://cj2gr1pk6ycu6" path="res://ground_grass_import.tscn" id="2_jx0al"]
 [ext_resource type="PackedScene" uid="uid://div2thil5r16p" path="res://ground_dirt_import.tscn" id="3_urap5"]
 [ext_resource type="Material" uid="uid://b28s1xvhvila8" path="res://materials/out_of_bounds.tres" id="4_yvq0c"]
@@ -68,6 +69,7 @@ bottom_radius = 5.0
 height = 0.001
 
 [node name="world" type="Node3D"]
+script = ExtResource("1_rsrvi")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_nxuck")
