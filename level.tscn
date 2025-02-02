@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://bbifcfy8xulk7"]
+[gd_scene load_steps=23 format=3 uid="uid://bbifcfy8xulk7"]
 
 [ext_resource type="PackedScene" uid="uid://dqmsn6rv6ppgx" path="res://player.tscn" id="1_55w0c"]
 [ext_resource type="Script" path="res://level.gd" id="1_rsrvi"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://dbdmsxikfyete" path="res://enemy_boss_ship.tscn" id="5_s7o6r"]
 [ext_resource type="Material" uid="uid://dg5ah45lvuq0q" path="res://materials/moon.tres" id="6_uygu2"]
 [ext_resource type="PackedScene" uid="uid://dvjpvdgoj8x62" path="res://gui.tscn" id="7_xdylm"]
+[ext_resource type="PackedScene" uid="uid://cw26oisvorj1s" path="res://ground_corn.tscn" id="10_voa16"]
+[ext_resource type="PackedScene" uid="uid://c1674lgtf4sel" path="res://flower_power.tscn" id="11_t7py8"]
 
 [sub_resource type="Gradient" id="Gradient_qd83k"]
 offsets = PackedFloat32Array(0.837662, 1)
@@ -83,7 +85,7 @@ transform = Transform3D(-1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, -1, 0, 0.0
 top_level = true
 
 [node name="ground_grass2" parent="." instance=ExtResource("2_jx0al")]
-transform = Transform3D(1.07589, 0, -0.0941282, 0, 0.54, 0, 0.0941282, 0, 1.07589, 0, 0, 0)
+transform = Transform3D(1.07589, 0, -0.0941282, 0, 0.54, 0, 0.0941282, 0, 1.07589, 0, -0.0483689, 0)
 
 [node name="ground_dirt2" parent="." instance=ExtResource("3_urap5")]
 transform = Transform3D(1.07689, 0, -0.0942153, 0, 1.081, 0, 0.0942153, 0, 1.07689, 0, 0, 0)
@@ -120,3 +122,17 @@ cast_shadow = 0
 mesh = SubResource("CylinderMesh_bxsgu")
 
 [node name="GUI" parent="." instance=ExtResource("7_xdylm")]
+
+[node name="ground_corn" parent="." instance=ExtResource("10_voa16")]
+
+[node name="flower_power" parent="." instance=ExtResource("11_t7py8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.00338475, 10.651)
+
+[node name="flower_power2" parent="." instance=ExtResource("11_t7py8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.003, -10.651)
+
+[node name="flower_power3" parent="." instance=ExtResource("11_t7py8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.651, 0.003, 0)
+
+[node name="flower_power4" parent="." instance=ExtResource("11_t7py8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.651, 0.003, 0)

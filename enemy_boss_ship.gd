@@ -24,6 +24,7 @@ const SEGMENT_LENGTH = 0.15  # Length of each segment
 const DEVIATION = 0.1  # Maximum random deviation for each segment
 const BOLT_WIDTH = 0.05  # Width of the lightning bolt
 
+
 # Existing constants
 const push_multiplier = 7
 const HOVER_HEIGHT = 3.0
@@ -47,6 +48,8 @@ const CHARGE_HEIGHT = -2.5
 const CHARGE_HEIGHT_TRANSITION_SPEED = 3.0
 const RIM_SPIN_SPEED = 5.0
 const CHARGE_TIMEOUT = 5.0
+const MAX_DISTANCE_FROM_PLAYER = 10.0  # Maximum allowed distance from player
+const RETURN_FORCE_MULTIPLIER = 2.0
 
 const UP_STABILIZATION = 400.0
 const ROTATION_DAMPING = 0.75
@@ -540,9 +543,23 @@ func circle_around_player(delta: float) -> void:
 		sin(t) * current_radius + noise_z
 	)
 	
-	var direction = (target - global_position).normalized()
-	apply_force(direction * MOVEMENT_FORCE)
-
+	# Check distance from player
+	var distance_to_player = global_position.distance_to(player.global_position)
+	
+	if distance_to_player > MAX_DISTANCE_FROM_PLAYER:
+		# If too far, move back towards player
+		var return_direction = (player.global_position - global_position).normalized()
+		var return_force = MOVEMENT_FORCE * RETURN_FORCE_MULTIPLIER
+		apply_force(return_direction * return_force)
+		
+		# Also adjust target radius to be smaller
+		target_radius = min(target_radius, MAX_DISTANCE_FROM_PLAYER * 0.5)
+	else:
+		# Normal movement
+		var direction = (target - global_position).normalized()
+		apply_force(direction * MOVEMENT_FORCE)
+		
+		
 func push_player() -> void:
 	if not player:
 		return
@@ -552,7 +569,8 @@ func push_player() -> void:
 	player.apply_impulse(push_direction * push_force)
 
 func pick_new_flight_parameters() -> void:
-	target_radius = randf_range(MIN_RADIUS, MAX_RADIUS)
+	# Ensure target_radius never exceeds half the max distance
+	target_radius = randf_range(MIN_RADIUS, min(MAX_RADIUS, MAX_DISTANCE_FROM_PLAYER * 0.5))
 	current_hover_height = randf_range(MIN_HOVER_HEIGHT, MAX_HOVER_HEIGHT)
 	
 	var height_pattern = randi() % 3
@@ -566,7 +584,8 @@ func pick_new_flight_parameters() -> void:
 	
 	current_circle_speed = BASE_CIRCLE_SPEED * randf_range(0.8, 1.1)
 	circle_direction = 1.0 if randf() > 0.5 else -1.0
-
+	
+	
 func find_world(node=get_tree().root) -> Node:
 	if node.name.to_lower() == "world":
 		return node

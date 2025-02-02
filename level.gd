@@ -1,14 +1,17 @@
 extends Node3D
 
+@onready var ground = $ground
+
 var world: Node
 var player
+var boss
 var active_meteors = {}  # Changed to dictionary to track meteor->warning pairs
 const METEOR_FORCE = 20.0
 const METEOR_SIZE = .5
 const WARNING_TIME = 1.2
-const SPAWN_INTERVAL = 1.0  # Explicit float
+const SPAWN_INTERVAL = 1.0  
 const SPAWN_HEIGHT = 10.0
-var next_spawn_time = 0.0  # Changed from spawn_timer
+var next_spawn_time = 0.0
 var is_showering = false
 
 class WarningIndicator extends Node3D:
@@ -34,6 +37,8 @@ func _ready() -> void:
 	print("World _ready called")
 	world = find_world()
 	player = world.get_node_or_null("player")
+	boss = world.get_node_or_null("ship")
+	ground.add_collision_exception_with(boss)
 	print("World ready - Found player: ", player != null)
 
 func _process(delta: float) -> void:
@@ -203,32 +208,8 @@ func _on_meteor_hit(body: Node3D, meteor: RigidBody3D) -> void:
 		push_dir.y = 0.5  # Add some upward force
 		player.apply_impulse(push_dir * METEOR_FORCE)
 		player.hurt()
-		
-		# Create impact effect
-		print("Creating impact effect")
-		var impact = GPUParticles3D.new()
-		var particle_material = ParticleProcessMaterial.new()
-		particle_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-		particle_material.emission_sphere_radius = 1.0
-		particle_material.gravity = Vector3(0, -10, 0)
-		particle_material.initial_velocity_min = 8.0
-		particle_material.initial_velocity_max = 15.0
-		particle_material.scale_min = 0.5
-		particle_material.scale_max = 1.0
-		particle_material.color = Color(1, 0.3, 0)
-		impact.process_material = particle_material
-		impact.amount = 50
-		impact.lifetime = 0.7
-		impact.one_shot = true
-		impact.global_position = meteor.global_position
-		add_child(impact)
-		
-		# Remove impact after it's done
-		var timer = get_tree().create_timer(impact.lifetime)
-		timer.timeout.connect(func(): impact.queue_free())
-		
-		remove_meteor_and_warning(meteor)
-		print("Meteor removed after player hit")
+
+
 
 func remove_meteor_and_warning(meteor: Node3D) -> void:
 	if meteor in active_meteors:

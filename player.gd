@@ -42,7 +42,10 @@ const SPIN_ANGULAR_DAMP = 1.0
 const MAX_ANGULAR_VELOCITY = 40.0
 const SPIN_RESET_TIME = 2.0
 const CANT_TOUCH_THIS_TIME = .5
-const ATTACK_DURATION = 0.2  # Duration to stay in attack state after firing
+const ATTACK_DURATION = 0.2
+const SHIELD_FOLLOW_SPEED = 0.5  # New constant for shield movement interpolation
+const SHIELD_VELOCITY_SYNC = 0.5  # New constant for velocity synchronization
+const SHIELD_OFFSET = 0.1  # New constant for initial shield offset
 
 enum ActionState {IDLE, WALK, ROLL, ATTACK, SPIN}
 
@@ -64,6 +67,7 @@ var spin_count = 0
 var spin_timeout = 0.0
 var attack_timer = 0.0
 var world
+var previous_shield_pos: Vector3  # New variable to track previous shield position
 
 func _ready():
 	world = find_world()
@@ -86,6 +90,7 @@ func _ready():
 	camera_original_position = spring_arm.position
 	camera_original_rotation = spring_arm.rotation
 	shield.add_collision_exception_with(self)
+	previous_shield_pos = shield.global_position
 
 func find_world(node=get_tree().root) -> Node:
 	if node.name.to_lower() == "world":
@@ -170,18 +175,47 @@ func _unhandled_input(event):
 		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/3, PI/3)
 
 func shield_youself():
-	global_position = shield.global_position - Vector3(0,.26,0)
-	armature.rotate_y(get_process_delta_time() * 10)
+	# Calculate predicted shield position based on current velocity
+	var predicted_shield_pos = shield.global_position + (shield.linear_velocity * get_physics_process_delta_time())
+	
+	# Calculate target position with offset
+	var target_position = predicted_shield_pos - Vector3(0, .26, 0)
+	
+	# Store current position for velocity calculation
+	var current_pos = global_position
+	
+	# Interpolate position with predicted position
+	global_position = current_pos.lerp(target_position, SHIELD_FOLLOW_SPEED)
+	
+	# Calculate and apply velocity to match shield movement
+	var velocity_target = (global_position - current_pos) / get_physics_process_delta_time()
+	linear_velocity = linear_velocity.lerp(velocity_target, SHIELD_VELOCITY_SYNC)
+	
+	# Update shield previous position
+	previous_shield_pos = shield.global_position
+	
+	# Update rotation
+	armature.rotate_y(get_process_delta_time() * 70)
 
 func init_shield():
 	if not shield.visible:
-		mesh.rotation = Vector3(0,0,0)
+		mesh.rotation = Vector3(0, 0, 0)
 		animation_tree.set("parameters/spin/request", true)
-		shield.set_deferred("global_position", global_position)
+		
+		# Calculate initial shield position with offset
+		var offset = global_transform.basis.z * SHIELD_OFFSET
+		var initial_shield_pos = global_position + offset
+		
+		# Set shield properties
+		shield.set_deferred("global_position", initial_shield_pos)
 		shield.set_deferred("linear_velocity", linear_velocity)
+		shield.set_deferred("angular_velocity", Vector3.ZERO)
 		shield.set_deferred("mass", 100)
 		shield.visible = true
-	
+		
+		# Initialize previous shield position
+		previous_shield_pos = initial_shield_pos
+
 func stop_spin():
 	spin_count += 1
 	if spin_count >= 2:
@@ -190,12 +224,11 @@ func stop_spin():
 	if not Input.is_action_pressed("spin"):
 		action_state = ActionState.IDLE
 		shield.visible = false
-		shield.mass = 0
+		shield.mass = 0.1
 		armature.rotation.y = 0
 	else:
 		animation_tree.set("parameters/spin/request", true)
 
-		
 func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	update_life_leafs()
 	
@@ -203,7 +236,6 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	prev_is_spinning = is_spinning
 	is_spinning = animation_tree.get("parameters/spin/active")
 	
-	# Update attack timer and state
 	if action_state == ActionState.ATTACK:
 		attack_timer -= state.step
 		if attack_timer <= 0:
@@ -218,7 +250,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	if action_state == ActionState.ROLL and !is_rolling:
 		action_state = ActionState.IDLE
 		mesh.rotation = Vector3(0, -PI, 0)
-	elif prev_is_spinning and !is_spinning:  # When spin ends
+	elif prev_is_spinning and !is_spinning:
 		stop_spin()
 	
 	if dizziness > 0:
@@ -235,9 +267,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 				spin_timeout = SPIN_RESET_TIME
 			if not animation_tree.get("parameters/spin/active"):
 				init_shield()
-				
 	
-	# Reset spin count after timeout
 	if spin_timeout > 0:
 		spin_timeout -= state.step
 		if spin_timeout <= 0:
@@ -256,8 +286,11 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		armature.rotation.y = spring_arm_pivot.rotation.y + PI
 		state.apply_central_force(direction * MOVEMENT_FORCE * 0.5)
 	elif is_spinning:
-		#state.apply_central_force(direction * MOVEMENT_FORCE * 0.2)
+		# Apply reduced movement force while spinning
+		state.apply_central_force(direction * MOVEMENT_FORCE * 0.2)
 		shield_youself()
+		# Add damping to prevent excessive speed
+		state.linear_velocity *= 0.98
 	elif is_rolling:
 		roll_timer += state.step
 		var roll_progress = roll_timer / ROLL_DURATION

@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://c1674lgtf4sel"]
+
+[ext_resource type="Script" path="res://flower_power.gd" id="1_omwyf"]
+[ext_resource type="PackedScene" uid="uid://bwhiom82gdjoq" path="res://flower_power.glb" id="2_bchtf"]
+[ext_resource type="Material" uid="uid://cb5u8m5r7rnbj" path="res://materials/glow.tres" id="3_71do6"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_uuxxc"]
+radius = 0.285
+
+[node name="flower_power" type="Area3D"]
+script = ExtResource("1_omwyf")
+
+[node name="flower_power" parent="." instance=ExtResource("2_bchtf")]
+
+[node name="Sphere" parent="flower_power" index="1"]
+surface_material_override/0 = ExtResource("3_71do6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_uuxxc")
+
+[editable path="flower_power"]
