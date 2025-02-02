@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dqyyv800mlmw6"]
+[gd_scene load_steps=15 format=3 uid="uid://fnkwcxjk7s13"]
 
 [ext_resource type="Script" path="res://options_menu.gd" id="1_1cju2"]
 [ext_resource type="Texture2D" uid="uid://j2lj1itxnxmi" path="res://images/Controls.png" id="2_liuxh"]
@@ -64,6 +64,7 @@ scale = Vector2(0.596094, 0.566204)
 texture = ExtResource("2_liuxh")
 
 [node name="Volume" type="HSlider" parent="."]
+visible = false
 layout_mode = 2
 offset_left = 666.0
 offset_top = 226.0
@@ -72,6 +73,7 @@ offset_bottom = 257.0
 theme = SubResource("Theme_2i87p")
 
 [node name="Label" type="Label" parent="Volume"]
+visible = false
 layout_mode = 0
 offset_left = 192.0
 offset_top = -93.0

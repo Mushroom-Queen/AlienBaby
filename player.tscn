@@ -1,11 +1,20 @@
-[gd_scene load_steps=22 format=3 uid="uid://dqmsn6rv6ppgx"]
+[gd_scene load_steps=27 format=3 uid="uid://dqmsn6rv6ppgx"]
 
 [ext_resource type="Script" path="res://player.gd" id="1_1k1m1"]
 [ext_resource type="PackedScene" uid="uid://b605jqe26p6tc" path="res://player.glb" id="2_do2bg"]
 [ext_resource type="PackedScene" uid="uid://cpl5phpdfqy26" path="res://leaf.tscn" id="3_170er"]
 [ext_resource type="Material" uid="uid://ck0ae2vgmu4fp" path="res://materials/skin.tres" id="3_l1lie"]
 [ext_resource type="PackedScene" uid="uid://bdd5yetvu57ol" path="res://laser.tscn" id="4_ob358"]
+<<<<<<< HEAD
 [ext_resource type="PackedScene" path="res://shield.tscn" id="6_k4gfy"]
+=======
+[ext_resource type="PackedScene" uid="uid://dv2sexdhx0vh6" path="res://shield.tscn" id="6_k4gfy"]
+[ext_resource type="AudioStream" uid="uid://dxlpn2d6aqdxa" path="res://sounds/die.wav" id="7_qo4na"]
+[ext_resource type="AudioStream" uid="uid://c3akw2mppssfx" path="res://sounds/hurt.wav" id="8_ikseb"]
+[ext_resource type="AudioStream" uid="uid://bd1aqb1dht5g0" path="res://sounds/player_laser.wav" id="9_7pllf"]
+[ext_resource type="AudioStream" uid="uid://bqsc2ippqhd6u" path="res://sounds/spin.wav" id="10_o6fgj"]
+[ext_resource type="AudioStream" uid="uid://cqjrcvsd5w12" path="res://sounds/walk.wav" id="11_ahu4g"]
+>>>>>>> de50a44 (Bug fixes)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xn0j4"]
 margin = 0.004
@@ -97,6 +106,7 @@ transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.0406768, 0)
 
 [node name="Skeleton3D" parent="player/Armature" index="0"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+<<<<<<< HEAD
 bones/0/position = Vector3(0, 0.168616, 0)
 bones/0/rotation = Quaternion(0, -0.0895046, 0, 0.995986)
 bones/1/rotation = Quaternion(-0.000339831, 2.8116e-05, -0.0623371, 0.998055)
@@ -130,6 +140,41 @@ bones/16/rotation = Quaternion(-0.00875622, 0.70983, -0.704263, 0.00882544)
 bones/17/position = Vector3(-0.102575, 0.112612, 0.259392)
 bones/17/scale = Vector3(1, 1, 1)
 bones/18/position = Vector3(-0.104547, 0.0602004, 0.062758)
+=======
+bones/0/position = Vector3(0, 0.167738, 0)
+bones/0/rotation = Quaternion(0, -0.0838043, 0, 0.996482)
+bones/1/rotation = Quaternion(-0.000339948, 2.66687e-05, -0.0580903, 0.998311)
+bones/2/rotation = Quaternion(0.000340939, -6.91616e-06, -0.000231822, 1)
+bones/3/rotation = Quaternion(3.64557e-23, -1.59801e-22, 5.49072e-12, 1)
+bones/5/position = Vector3(0.0642403, 0.216765, 1.53161e-08)
+bones/5/rotation = Quaternion(0.623415, 0.16335, -0.68798, 0.333698)
+bones/6/rotation = Quaternion(0.287239, -1.65125e-07, -1.36703e-07, 0.957859)
+bones/7/position = Vector3(0.0559364, 0.0181487, -0.000727577)
+bones/7/rotation = Quaternion(0.138449, 0.0403083, 0.968608, -0.202499)
+bones/7/scale = Vector3(1, 1, 1)
+bones/8/rotation = Quaternion(-0.124389, 0.0769785, -0.0899841, 0.985142)
+bones/8/scale = Vector3(1, 1, 1)
+bones/9/rotation = Quaternion(0.638927, -0.0621353, -0.0877493, 0.761716)
+bones/9/scale = Vector3(1, 1, 1)
+bones/10/position = Vector3(-0.0642403, 0.216765, -1.53161e-08)
+bones/10/rotation = Quaternion(0.685496, -0.324465, 0.62827, 0.17348)
+bones/11/rotation = Quaternion(0.287239, 1.63435e-07, 1.31067e-07, 0.957859)
+bones/11/scale = Vector3(1, 1, 1)
+bones/12/position = Vector3(-0.0562189, 0.0170301, 0.00171231)
+bones/12/rotation = Quaternion(0.0580684, 0.401663, 0.885926, 0.224565)
+bones/12/scale = Vector3(1, 1, 1)
+bones/13/rotation = Quaternion(-0.304213, -0.0786212, 0.22076, 0.92333)
+bones/13/scale = Vector3(1, 1, 1)
+bones/14/rotation = Quaternion(0.525853, 0.0896502, 0.0210911, 0.845575)
+bones/14/scale = Vector3(1, 1, 1)
+bones/15/position = Vector3(0.102575, 0.112612, 0.259392)
+bones/15/scale = Vector3(1, 1, 1)
+bones/16/position = Vector3(0.104547, 0.0328985, 0.00429075)
+bones/16/rotation = Quaternion(-0.00875622, 0.70983, -0.704263, 0.00882544)
+bones/17/position = Vector3(-0.102575, 0.112612, 0.259392)
+bones/17/scale = Vector3(1, 1, 1)
+bones/18/position = Vector3(-0.104547, 0.0583027, 0.0586998)
+>>>>>>> de50a44 (Bug fixes)
 bones/18/rotation = Quaternion(0.00875622, 0.70983, -0.704263, -0.00882544)
 
 [node name="body" parent="player/Armature/Skeleton3D" index="0"]
@@ -181,7 +226,11 @@ material_override = ExtResource("3_l1lie")
 material_override = ExtResource("3_l1lie")
 
 [node name="leafs" type="BoneAttachment3D" parent="player/Armature/Skeleton3D" index="20"]
+<<<<<<< HEAD
 transform = Transform3D(0.976276, 0.122891, -0.178277, -0.124892, 0.99217, -1.7271e-06, 0.176881, 0.0222671, 0.98398, 0.0342638, 0.694711, 0.00609405)
+=======
+transform = Transform3D(0.979249, 0.114809, -0.167006, -0.116445, 0.993197, -1.61052e-06, 0.165869, 0.0194485, 0.985956, 0.0320055, 0.694119, 0.00530756)
+>>>>>>> de50a44 (Bug fixes)
 bone_name = "leafs"
 bone_idx = 4
 
@@ -202,12 +251,20 @@ transform = Transform3D(-4.84288e-08, -3.52156e-09, 1, 0, 1, 1.60071e-10, -1, 0,
 transform = Transform3D(1.49012e-08, -3.52156e-09, -1, 0, 1, -2.32831e-10, 1, 0, 1.11759e-08, 0, 0, 0)
 
 [node name="left_arm" type="BoneAttachment3D" parent="player/Armature/Skeleton3D" index="21"]
+<<<<<<< HEAD
 transform = Transform3D(0.171472, 0.0908099, -0.980995, -0.273913, -0.952088, -0.136012, -0.946345, 0.29203, -0.138382, 0.120558, 0.318301, 0.0412604)
+=======
+transform = Transform3D(0.161476, 0.0971926, -0.982079, -0.255486, -0.957096, -0.136728, -0.953233, 0.272985, -0.129716, 0.121236, 0.31707, 0.0386108)
+>>>>>>> de50a44 (Bug fixes)
 bone_name = "lowerarm.l"
 bone_idx = 6
 
 [node name="right_arm" type="BoneAttachment3D" parent="player/Armature/Skeleton3D" index="22"]
+<<<<<<< HEAD
 transform = Transform3D(-0.172929, -0.0961914, 0.980226, -0.243422, -0.960172, -0.137167, 0.95438, -0.262329, 0.142626, -0.120937, 0.317731, -0.0391678)
+=======
+transform = Transform3D(-0.162666, -0.101927, 0.981403, -0.226855, -0.96414, -0.137734, 0.960248, -0.24504, 0.13371, -0.12157, 0.316573, -0.036642)
+>>>>>>> de50a44 (Bug fixes)
 bone_name = "lowerarm.r"
 bone_idx = 11
 
@@ -241,5 +298,28 @@ parameters/walk/blend_position = 1.0
 [node name="AudioListener3D" type="AudioListener3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.291458, 0)
 current = true
+
+[node name="dieStream" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("7_qo4na")
+
+[node name="hurtStream" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("8_ikseb")
+
+[node name="laserStream" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("9_7pllf")
+
+[node name="spinStream" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("10_o6fgj")
+
+[node name="rollStream" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("10_o6fgj")
+pitch_scale = 1.71
+
+[node name="walkStream" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("11_ahu4g")
+volume_db = 7.235
+
+[connection signal="finished" from="dieStream" to="." method="_on_die_stream_finished"]
+[connection signal="finished" from="walkStream" to="." method="_on_walk_stream_finished"]
 
 [editable path="player"]

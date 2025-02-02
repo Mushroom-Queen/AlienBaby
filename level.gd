@@ -1,6 +1,9 @@
 extends Node3D
 
 @onready var ground = $ground
+@onready var rock_fall_stream = preload("res://sounds/rock_fall.wav")
+@onready var rock_hit_stream = preload("res://sounds/rock_hit.wav")
+
 
 var world: Node
 var player
@@ -115,11 +118,21 @@ func create_meteor():
 func launch_meteor(warning: WarningIndicator, placeholder: Node3D):
 	print("Launching meteor...")
 	
-	# Create actual meteor
+	# Create meteor
 	var meteor = RigidBody3D.new()
-	meteor.gravity_scale = 3.0  # Faster fall
+	meteor.gravity_scale = 3.0 
 	
-	print("Creating meteor mesh")
+	# Sound
+	var audioStream = AudioStreamPlayer3D.new()
+	audioStream.stream = rock_fall_stream
+	meteor.add_child(audioStream)
+	audioStream.call_deferred("play", true)
+	var hitStream = AudioStreamPlayer3D.new()
+	hitStream.name = "hitStream"
+	hitStream.stream = rock_hit_stream
+	meteor.add_child(hitStream)
+	
+	
 	var mesh = CSGSphere3D.new()
 	mesh.radius = METEOR_SIZE
 	var mat = StandardMaterial3D.new()
@@ -131,7 +144,6 @@ func launch_meteor(warning: WarningIndicator, placeholder: Node3D):
 	meteor.add_child(mesh)
 	
 	# Add collision
-	print("Adding collision shape")
 	var collision = CollisionShape3D.new()
 	var sphere_shape = SphereShape3D.new()
 	sphere_shape.radius = METEOR_SIZE
@@ -198,6 +210,8 @@ func _on_meteor_collision(body: Node3D, meteor: RigidBody3D) -> void:
 
 func _on_meteor_hit(body: Node3D, meteor: RigidBody3D) -> void:
 	print("Meteor hit detected with body: ", body.name)
+	meteor.get_node_or_null("hitStream").play()
+	
 	if not is_instance_valid(meteor) or not is_instance_valid(body) or not (meteor in active_meteors):
 		return
 		

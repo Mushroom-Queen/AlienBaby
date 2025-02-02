@@ -102,6 +102,10 @@ func find_world(node=get_tree().root) -> Node:
 	return null
 
 func update_life_leafs():
+	if life <= 0:
+		if not $dieStream.playing:
+			rotate_x(-PI/2)
+			$dieStream.play()
 	if life != life_rendered:
 		life_rendered = life
 		leaf1.visible = life >= 4
@@ -137,6 +141,8 @@ func hurt():
 		print("Can't touch this")
 		return
 	hurt_counter = CANT_TOUCH_THIS_TIME
+	$hurtStream.play()
+	apply_impulse(Vector3(0,10,0))
 	life -= 1
 
 func update_hurt_counter(delta):
@@ -162,12 +168,16 @@ func _unhandled_input(event):
 			action_state = ActionState.ROLL
 			roll_timer = 0.0
 			animation_tree.set("parameters/roll/request", true)
+			$rollStream.play()
 	
 	if Input.is_action_just_pressed("attack") and action_state != ActionState.SPIN:
 		action_state = ActionState.ATTACK
 		attack_timer = ATTACK_DURATION
 		animation_tree.set("parameters/shooting/blend_amount", 1.0)
-		laser.start_firing()
+		
+		if laser.can_fire:
+			laser.start_firing()
+			$laserStream.play()
 	
 	if event is InputEventMouseMotion:
 		spring_arm_pivot.rotate_y(-event.relative.x * .005)
@@ -198,6 +208,8 @@ func shield_youself():
 	armature.rotate_y(get_process_delta_time() * 70)
 
 func init_shield():
+	if not $spinStream.playing:
+		$spinStream.play()
 	if not shield.visible:
 		mesh.rotation = Vector3(0, 0, 0)
 		animation_tree.set("parameters/spin/request", true)
@@ -321,7 +333,14 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	current_velocity = state.linear_velocity
 	current_velocity = current_velocity.move_toward(Vector3.ZERO, FRICTION_FORCE * state.step)
 	state.linear_velocity = current_velocity
-		
+	
+	
+	if current_velocity.length() / MAX_VELOCITY > .2:
+		if not $walkStream.playing:
+			$walkStream.play()
+	else:
+		$walkStream.stop()
+			
 	animation_tree.set("parameters/walk/blend_position", current_velocity.length() / MAX_VELOCITY)
 
 
@@ -332,3 +351,12 @@ func _process(delta):
 	collision_right.global_rotation = arm_bone_right.global_rotation
 	update_camera(delta)
 	update_hurt_counter(delta)
+
+
+func _on_die_stream_finished() -> void:
+	print("dead")
+	get_tree().change_scene_to_file("res://game_over.tscn")
+
+
+func _on_walk_stream_finished() -> void:
+	$walkStream.play()

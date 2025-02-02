@@ -1,7 +1,8 @@
 extends Node3D
 var corn
 var corn_field = []
-# Configuration variables
+
+
 var radius_start = 10.0  # Starting radius of first circle
 var row_spacing = .5   # Space between each circular row
 var num_rows = 2       # Number of circular rows
@@ -10,7 +11,7 @@ var corn_per_row = 190   # Number of corn plants per row
 # Variation settings
 var height_min = 0.8    # Minimum height multiplier
 var height_max = 1.2    # Maximum height multiplier
-var tilt_max = 0.2      # Maximum tilt in radians 
+var tilt_max = 0.2      # Maximum tilt 
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
