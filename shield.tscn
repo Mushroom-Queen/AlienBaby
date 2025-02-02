@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://dv2sexdhx0vh6"]
+
+[ext_resource type="Material" uid="uid://tnsup0sefsh2" path="res://materials/sheild.tres" id="1_q8mxa"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_edcwt"]
+friction = 0.0
+bounce = 1.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_ls7e0"]
+radius = 0.325
+
+[sub_resource type="SphereMesh" id="SphereMesh_hh8jh"]
+radius = 0.325
+height = 0.65
+
+[node name="shield" type="RigidBody3D"]
+visible = false
+mass = 0.1
+physics_material_override = SubResource("PhysicsMaterial_edcwt")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_ls7e0")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+material_override = ExtResource("1_q8mxa")
+mesh = SubResource("SphereMesh_hh8jh")

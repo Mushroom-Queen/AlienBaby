@@ -17,6 +17,7 @@ extends RigidBody3D
 @onready var collision_right = $CollisionShapeRight
 @onready var arm_bone_left = $player/Armature/Skeleton3D/left_arm
 @onready var arm_bone_right = $player/Armature/Skeleton3D/right_arm
+@onready var shield = $shield
 
 const MOVEMENT_FORCE = 140.0
 const FRICTION_FORCE = 10.0
@@ -62,8 +63,11 @@ var camera_original_rotation: Vector3
 var spin_count = 0
 var spin_timeout = 0.0
 var attack_timer = 0.0
+var world
 
 func _ready():
+	world = find_world()
+	
 	lock_rotation = true
 	freeze = false
 	contact_monitor = true
@@ -72,14 +76,25 @@ func _ready():
 	can_sleep = false
 	animation_tree.active = true
 	spring_arm_pivot.top_level = true
-	spring_arm_pivot.position.y = -0.5
+	spring_arm_pivot.position.y = .44
 	
 	spring_arm.add_excluded_object(self)
+	spring_arm.add_excluded_object(shield)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	mesh.rotation = Vector3(0, -PI, 0)
 	initial_mesh_position = mesh.position
 	camera_original_position = spring_arm.position
 	camera_original_rotation = spring_arm.rotation
+	shield.add_collision_exception_with(self)
+
+func find_world(node=get_tree().root) -> Node:
+	if node.name.to_lower() == "world":
+		return node
+	for child in node.get_children():
+		var found = find_world(child)
+		if found:
+			return found
+	return null
 
 func update_life_leafs():
 	if life != life_rendered:
@@ -90,7 +105,7 @@ func update_life_leafs():
 		leaf4.visible = life >= 1
 
 func update_camera(delta: float) -> void:
-	spring_arm_pivot.global_position = global_position + Vector3(0, -0.5, 0)
+	spring_arm_pivot.global_position = global_position + Vector3(0, 0.44, 0)
 	
 	dizzy_time += delta * DIZZY_SWAY_SPEED * (1.0 + dizziness * 0.5)
 	
@@ -111,6 +126,8 @@ func update_camera(delta: float) -> void:
 	spring_arm.position = spring_arm.position.lerp(offset, CAMERA_LERP_SPEED)
 
 func hurt():
+	if is_spinning:
+		return
 	if hurt_counter > 0:
 		print("Can't touch this")
 		return
@@ -152,6 +169,33 @@ func _unhandled_input(event):
 		spring_arm.rotate_x(-event.relative.y * .005)
 		spring_arm.rotation.x = clamp(spring_arm.rotation.x, -PI/3, PI/3)
 
+func shield_youself():
+	global_position = shield.global_position - Vector3(0,.26,0)
+	armature.rotate_y(get_process_delta_time() * 10)
+
+func init_shield():
+	if not shield.visible:
+		mesh.rotation = Vector3(0,0,0)
+		animation_tree.set("parameters/spin/request", true)
+		shield.set_deferred("global_position", global_position)
+		shield.set_deferred("linear_velocity", linear_velocity)
+		shield.set_deferred("mass", 100)
+		shield.visible = true
+	
+func stop_spin():
+	spin_count += 1
+	if spin_count >= 2:
+		dizziness = min(dizziness + POST_SPIN_DIZZ_COST, MAX_DIZZINESS)
+		spin_count = 0
+	if not Input.is_action_pressed("spin"):
+		action_state = ActionState.IDLE
+		shield.visible = false
+		shield.mass = 0
+		armature.rotation.y = 0
+	else:
+		animation_tree.set("parameters/spin/request", true)
+
+		
 func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	update_life_leafs()
 	
@@ -175,17 +219,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		action_state = ActionState.IDLE
 		mesh.rotation = Vector3(0, -PI, 0)
 	elif prev_is_spinning and !is_spinning:  # When spin ends
-		spin_count += 1
-		if spin_count >= 2:
-			dizziness = min(dizziness + POST_SPIN_DIZZ_COST, MAX_DIZZINESS)
-			spin_count = 0
-		action_state = ActionState.IDLE
-		mesh.rotation = Vector3(0, -PI, 0)
-		mesh.position = initial_mesh_position
-		lock_rotation = true
-		angular_damp = SPIN_ANGULAR_DAMP
-		transform.basis = Basis.IDENTITY.rotated(Vector3.UP, PI)
-		state.angular_velocity = Vector3.ZERO
+		stop_spin()
 	
 	if dizziness > 0:
 		dizziness -= SPIN_DIZZ_RESET_SPEED * state.step
@@ -198,13 +232,10 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 			if not is_spinning:
 				action_state = ActionState.SPIN
 				is_spinning = true
-				lock_rotation = false
-				transform.basis = Basis.IDENTITY
-				mesh.position.y += 0.15
 				spin_timeout = SPIN_RESET_TIME
 			if not animation_tree.get("parameters/spin/active"):
-				animation_tree.set("parameters/spin/request", true)
-				state.angular_velocity = Vector3(0, SPIN_POWER, 0)
+				init_shield()
+				
 	
 	# Reset spin count after timeout
 	if spin_timeout > 0:
@@ -225,7 +256,8 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		armature.rotation.y = spring_arm_pivot.rotation.y + PI
 		state.apply_central_force(direction * MOVEMENT_FORCE * 0.5)
 	elif is_spinning:
-		state.apply_central_force(direction * MOVEMENT_FORCE * 0.2)
+		#state.apply_central_force(direction * MOVEMENT_FORCE * 0.2)
+		shield_youself()
 	elif is_rolling:
 		roll_timer += state.step
 		var roll_progress = roll_timer / ROLL_DURATION
@@ -257,6 +289,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	state.linear_velocity = current_velocity
 		
 	animation_tree.set("parameters/walk/blend_position", current_velocity.length() / MAX_VELOCITY)
+
 
 func _process(delta):
 	collision_left.global_position = arm_bone_left.global_position

@@ -10,7 +10,7 @@ extends RigidBody3D
 
 # New shooting-related variables
 const SHOOT_COOLDOWN = 2.0
-const BOLT_SPEED = 10.0
+const BOLT_SPEED = 12.0
 const BOLT_LIFETIME = 3.0
 const BOLT_MASS = 20.0
 var can_shoot := true
@@ -254,22 +254,26 @@ func spawn_bolt() -> void:
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	bolt_mesh.material_override = material
 	
-	# Create collision shape
+	# Create collision shape using cylinder
 	var collision = CollisionShape3D.new()
-	var capsule_shape = CapsuleShape3D.new()
-	capsule_shape.radius = BOLT_WIDTH
-	capsule_shape.height = SEGMENT_LENGTH * SEGMENTS
-	collision.shape = capsule_shape
+	var cylinder_shape = CylinderShape3D.new()
+	cylinder_shape.radius = BOLT_WIDTH
+	cylinder_shape.height = SEGMENT_LENGTH * SEGMENTS
+	collision.shape = cylinder_shape
+	# Rotate cylinder to align with bolt direction
+	collision.rotation_degrees.x = 90
 	bolt_body.add_child(collision)
 	
-	# Create damage area
+	# Create damage area with cylinder
 	var damage_area = Area3D.new()
 	damage_area.name = "DamageArea"
 	var area_collision = CollisionShape3D.new()
-	var area_shape = CapsuleShape3D.new()
+	var area_shape = CylinderShape3D.new()
 	area_shape.radius = BOLT_WIDTH * 2
 	area_shape.height = SEGMENT_LENGTH * SEGMENTS
 	area_collision.shape = area_shape
+	# Rotate cylinder to align with bolt direction
+	area_collision.rotation_degrees.x = 90
 	damage_area.add_child(area_collision)
 	bolt_body.add_child(damage_area)
 	
@@ -278,7 +282,7 @@ func spawn_bolt() -> void:
 	
 	# Setup physics
 	bolt_body.add_collision_exception_with(self)
-	var direction = (player.global_position - firing_gun.global_position - Vector3(0,1,0)).normalized()
+	var direction = (player.global_position - firing_gun.global_position + Vector3(0,.1,0)).normalized()
 	bolt_body.linear_velocity = direction * BOLT_SPEED
 	
 	# Add metadata for lifetime tracking
