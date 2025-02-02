@@ -79,24 +79,25 @@ transform = Transform3D(-0.866025, -0.493844, 0.0782173, 0, 0.156434, 0.987688, 
 shadow_enabled = true
 
 [node name="player" parent="." instance=ExtResource("1_55w0c")]
-transform = Transform3D(-1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, -1, 0, 0.0278369, -2)
+transform = Transform3D(-1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, -1, 0, 0.0278369, -3.22204)
 top_level = true
 
 [node name="ground_grass2" parent="." instance=ExtResource("2_jx0al")]
-transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, 0, 0, 0)
+transform = Transform3D(1.07589, 0, -0.0941282, 0, 0.54, 0, 0.0941282, 0, 1.07589, 0, 0, 0)
 
 [node name="ground_dirt2" parent="." instance=ExtResource("3_urap5")]
+transform = Transform3D(1.07689, 0, -0.0942153, 0, 1.081, 0, 0.0942153, 0, 1.07689, 0, 0, 0)
 
 [node name="ground" type="StaticBody3D" parent="."]
 
 [node name="outside_wall_mesh" type="MeshInstance3D" parent="ground"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.582, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.757, 0)
 material_override = ExtResource("4_yvq0c")
 mesh = SubResource("CylinderMesh_yjhkq")
 skeleton = NodePath("../..")
 
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="ground"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.582, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.717, 0)
 shape = SubResource("ConcavePolygonShape3D_syjkt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ground"]

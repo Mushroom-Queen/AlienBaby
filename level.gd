@@ -4,6 +4,7 @@ var world: Node
 var player
 var active_meteors = {}  # Changed to dictionary to track meteor->warning pairs
 const METEOR_FORCE = 20.0
+const METEOR_SIZE = .5
 const WARNING_TIME = 1.2
 const SPAWN_INTERVAL = 1.0  # Explicit float
 const SPAWN_HEIGHT = 10.0
@@ -16,7 +17,7 @@ class WarningIndicator extends Node3D:
 	
 	func _init():
 		cylinder = CSGCylinder3D.new()
-		cylinder.radius = .7
+		cylinder.radius = METEOR_SIZE
 		cylinder.height = 0.1
 		cylinder.sides = 16
 		add_child(cylinder)
@@ -115,7 +116,7 @@ func launch_meteor(warning: WarningIndicator, placeholder: Node3D):
 	
 	print("Creating meteor mesh")
 	var mesh = CSGSphere3D.new()
-	mesh.radius = 1.0
+	mesh.radius = METEOR_SIZE
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = Color(0.7, 0.2, 0.0)
 	mat.emission_enabled = true
@@ -128,7 +129,7 @@ func launch_meteor(warning: WarningIndicator, placeholder: Node3D):
 	print("Adding collision shape")
 	var collision = CollisionShape3D.new()
 	var sphere_shape = SphereShape3D.new()
-	sphere_shape.radius = 1.0
+	sphere_shape.radius = METEOR_SIZE
 	collision.shape = sphere_shape
 	meteor.add_child(collision)
 	
