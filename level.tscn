@@ -4,19 +4,14 @@
 [ext_resource type="Script" path="res://level.gd" id="1_rsrvi"]
 [ext_resource type="PackedScene" uid="uid://cj2gr1pk6ycu6" path="res://ground_grass_import.tscn" id="2_jx0al"]
 [ext_resource type="PackedScene" uid="uid://div2thil5r16p" path="res://ground_dirt_import.tscn" id="3_urap5"]
-[ext_resource type="Material" path="res://materials/out_of_bounds.tres" id="4_yvq0c"]
+[ext_resource type="Material" uid="uid://b28s1xvhvila8" path="res://materials/out_of_bounds.tres" id="4_yvq0c"]
 [ext_resource type="Material" uid="uid://cu88gmtcasker" path="res://materials/far_grass.tres" id="5_isp2k"]
 [ext_resource type="PackedScene" uid="uid://dbdmsxikfyete" path="res://enemy_boss_ship.tscn" id="5_s7o6r"]
 [ext_resource type="Material" uid="uid://dg5ah45lvuq0q" path="res://materials/moon.tres" id="6_uygu2"]
 [ext_resource type="PackedScene" uid="uid://dvjpvdgoj8x62" path="res://gui.tscn" id="7_xdylm"]
-<<<<<<< HEAD
-[ext_resource type="PackedScene" path="res://ground_corn.tscn" id="10_voa16"]
-[ext_resource type="PackedScene" path="res://flower_power.tscn" id="11_t7py8"]
-=======
 [ext_resource type="PackedScene" uid="uid://cw26oisvorj1s" path="res://ground_corn.tscn" id="10_voa16"]
 [ext_resource type="PackedScene" uid="uid://c1674lgtf4sel" path="res://flower_power.tscn" id="11_t7py8"]
 [ext_resource type="AudioStream" uid="uid://co8s8m02d8bvu" path="res://sounds/bg.wav" id="12_yacbv"]
->>>>>>> 7f7afde (1/2 done sounds)
 
 [sub_resource type="Gradient" id="Gradient_qd83k"]
 offsets = PackedFloat32Array(0.837662, 1)
@@ -89,7 +84,6 @@ shadow_enabled = true
 [node name="player" parent="." instance=ExtResource("1_55w0c")]
 transform = Transform3D(-1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, -1, 0, 0.0278369, -3.22204)
 top_level = true
-visible = false
 
 [node name="ground_grass2" parent="." instance=ExtResource("2_jx0al")]
 transform = Transform3D(1.07589, 0, -0.0941282, 0, 0.54, 0, 0.0941282, 0, 1.07589, 0, -0.0483689, 0)
