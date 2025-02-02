@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://cpl5phpdfqy26" path="res://leaf.tscn" id="3_170er"]
 [ext_resource type="Material" uid="uid://ck0ae2vgmu4fp" path="res://materials/skin.tres" id="3_l1lie"]
 [ext_resource type="PackedScene" uid="uid://bdd5yetvu57ol" path="res://laser.tscn" id="4_ob358"]
-[ext_resource type="PackedScene" path="res://shield.tscn" id="6_k4gfy"]
+[ext_resource type="PackedScene" uid="uid://dv2sexdhx0vh6" path="res://shield.tscn" id="6_k4gfy"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xn0j4"]
 margin = 0.004

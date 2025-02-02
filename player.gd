@@ -212,6 +212,7 @@ func init_shield():
 		shield.set_deferred("angular_velocity", Vector3.ZERO)
 		shield.set_deferred("mass", 100)
 		shield.visible = true
+		shield.rotation = Vector3(0,0,0)
 		
 		# Initialize previous shield position
 		previous_shield_pos = initial_shield_pos

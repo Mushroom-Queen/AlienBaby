@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://level.gd" id="1_rsrvi"]
 [ext_resource type="PackedScene" uid="uid://cj2gr1pk6ycu6" path="res://ground_grass_import.tscn" id="2_jx0al"]
 [ext_resource type="PackedScene" uid="uid://div2thil5r16p" path="res://ground_dirt_import.tscn" id="3_urap5"]
-[ext_resource type="Material" path="res://materials/out_of_bounds.tres" id="4_yvq0c"]
+[ext_resource type="Material" uid="uid://b28s1xvhvila8" path="res://materials/out_of_bounds.tres" id="4_yvq0c"]
 [ext_resource type="Material" uid="uid://cu88gmtcasker" path="res://materials/far_grass.tres" id="5_isp2k"]
 [ext_resource type="PackedScene" uid="uid://dbdmsxikfyete" path="res://enemy_boss_ship.tscn" id="5_s7o6r"]
 [ext_resource type="Material" uid="uid://dg5ah45lvuq0q" path="res://materials/moon.tres" id="6_uygu2"]
@@ -94,14 +94,12 @@ transform = Transform3D(1.07689, 0, -0.0942153, 0, 1.081, 0, 0.0942153, 0, 1.076
 
 [node name="outside_wall_mesh" type="MeshInstance3D" parent="ground"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.757, 0)
-visible = false
 material_override = ExtResource("4_yvq0c")
 mesh = SubResource("CylinderMesh_yjhkq")
 skeleton = NodePath("../..")
 
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="ground"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.717, 0)
-visible = false
 shape = SubResource("ConcavePolygonShape3D_syjkt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ground"]
