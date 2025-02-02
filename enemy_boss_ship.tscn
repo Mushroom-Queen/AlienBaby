@@ -1,8 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://dbdmsxikfyete"]
+[gd_scene load_steps=8 format=3 uid="uid://dbdmsxikfyete"]
 
 [ext_resource type="PackedScene" uid="uid://55fe4rlclskr" path="res://enemy_boss_ship.glb" id="1_c2iaj"]
 [ext_resource type="Script" path="res://enemy_boss_ship.gd" id="1_f0ikg"]
 [ext_resource type="Material" uid="uid://cdp24dkx2gdck" path="res://materials/gun_glass.tres" id="2_5bbej"]
+[ext_resource type="AudioStream" uid="uid://df35wabv4r2io" path="res://sounds/boss_humm.wav" id="4_2tdh4"]
+[ext_resource type="AudioStream" uid="uid://bfmp2mg0te1ne" path="res://sounds/boss_saw.wav" id="5_cd1h0"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_qkxhw"]
 height = 0.815
@@ -130,6 +132,17 @@ shape = SubResource("BoxShape3D_sgwth")
 [node name="CollisionShape3D15" type="CollisionShape3D" parent="joint/rim"]
 transform = Transform3D(-0.966183, 0, 0.257858, 0, 1, 0, -0.257858, 0, -0.966183, 0.721299, 0.141325, 1.25248)
 shape = SubResource("BoxShape3D_sgwth")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("4_2tdh4")
+volume_db = 10.0
+max_db = 6.0
+autoplay = true
+
+[node name="sawStream" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("5_cd1h0")
+
+[connection signal="finished" from="AudioStreamPlayer3D" to="." method="_on_audio_stream_player_3d_finished"]
 
 [editable path="enemy_boss_ship"]
 [editable path="joint/rim/enemy_boss_ship"]

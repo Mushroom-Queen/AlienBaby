@@ -7,7 +7,8 @@ extends RigidBody3D
 @onready var gun_2 = $enemy_boss_ship/L2/gun2
 @onready var gun_3 = $enemy_boss_ship/L3/gun3
 @onready var gun_4 = $enemy_boss_ship/L4/gun4
-
+@onready var laser_stream = preload("res://sounds/boss_laser.wav")
+@onready var sawStream = $sawStream
 # New shooting-related variables
 const SHOOT_COOLDOWN = 2.0
 const BOLT_SPEED = 12.0
@@ -16,7 +17,7 @@ const BOLT_MASS = 20.0
 var can_shoot := true
 var shoot_timer := 0.0
 var current_bolt = null
-var life = 50
+var life = 100
 
 # Lightning bolt specific constants
 const SEGMENTS = 6  # Number of segments in the lightning bolt
@@ -158,6 +159,8 @@ func _physics_process(delta: float) -> void:
 			stabilize_orientation(delta)
 			apply_hover_force(0.5)
 			execute_charge(delta)
+			if not sawStream.playing:
+				sawStream.play()
 			
 		METEOR_SHOWER:
 			execute_meteor_shower(delta)
@@ -216,6 +219,12 @@ func spawn_bolt() -> void:
 	var bolt_body = RigidBody3D.new()
 	bolt_body.mass = BOLT_MASS
 	bolt_body.gravity_scale = 0.1
+	
+	# Sound
+	var audioStream = AudioStreamPlayer3D.new()
+	audioStream.stream = laser_stream
+	bolt_body.add_child(audioStream)
+	audioStream.call_deferred("play", true)
 	
 	# Create the lightning bolt mesh
 	var st = SurfaceTool.new()
@@ -594,3 +603,7 @@ func find_world(node=get_tree().root) -> Node:
 		if found:
 			return found
 	return null
+
+
+func _on_audio_stream_player_3d_finished() -> void:
+	$AudioStreamPlayer3D.play()

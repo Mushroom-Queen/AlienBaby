@@ -229,3 +229,7 @@ func find_world(node=get_tree().root) -> Node:
 		if found:
 			return found
 	return null
+
+
+func _on_audio_stream_player_finished() -> void:
+	$AudioStreamPlayer.play()
