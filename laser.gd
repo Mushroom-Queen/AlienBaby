@@ -14,7 +14,7 @@ const BOLT_MASS := 200.0
 const FIRE_RATE := 0.5  # 2 shots per second (1/2 = 0.5 seconds between shots)
 
 func _ready():
-	world = find_world(get_tree().root)
+	world = find_world()
 	player = world.get_node_or_null("player")
 	boss = world.get_node_or_null("ship")
 	if player:
@@ -23,7 +23,7 @@ func _ready():
 			ray.add_exception(player)
 	mesh.visible = false
 
-func find_world(node) -> Node:
+func find_world(node=get_tree().root) -> Node:
 	if node.name.to_lower() == "world":
 		return node
 	for child in node.get_children():

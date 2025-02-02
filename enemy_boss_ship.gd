@@ -16,7 +16,7 @@ const BOLT_MASS = 20.0
 var can_shoot := true
 var shoot_timer := 0.0
 var current_bolt = null
-var life = 100
+var life = 50
 
 # Lightning bolt specific constants
 const SEGMENTS = 6  # Number of segments in the lightning bolt
@@ -55,10 +55,18 @@ const ROTATION_INTERPOLATION = 0.2
 const ORIENTATION_THRESHOLD = 0.01
 const UPRIGHT_FORCE = 150.0
 
+# Meteor shower specific constants
+const SHOWER_HEIGHT = 15.0
+const SHOWER_TRANSITION_SPEED = 2.0
+const SHOWER_DURATION = 8.0
+const SHOWER_COOLDOWN = 20.0 
+const SHOWER_MIN_STATE_TIME = 2.0 
+
 enum {
 	CIRCLING,
 	PREPARING_CHARGE,
-	CHARGING
+	CHARGING,
+	METEOR_SHOWER
 }
 
 # Existing variables
@@ -80,6 +88,10 @@ var state_timer = 0.0
 var charge_target: Vector3
 var charge_start_pos: Vector3
 var charge_height_current = 0.0
+var shower_timer = 0.0
+var previous_state = CIRCLING
+var shower_cooldown_timer = 0.0
+var can_shower = true
 
 func _ready() -> void:
 	axis_lock_angular_x = true
@@ -111,10 +123,20 @@ func _physics_process(delta: float) -> void:
 	if can_shoot:
 		shoot_timer += delta
 	
+	# Only update shower cooldown when not in meteor shower mode
+	if not can_shower and current_state != METEOR_SHOWER:
+		shower_cooldown_timer += delta
+		if shower_cooldown_timer >= SHOWER_COOLDOWN:
+			can_shower = true
+	
 	match current_state:
 		CIRCLING:
 			if state_timer >= CIRCLING_TIME:
-				start_charge_attack()
+				# If health is low and shower is available, chance to do shower instead of charge
+				if life <= 50 and can_shower:
+					start_meteor_shower()
+				else:
+					start_charge_attack()
 			else:
 				stabilize_orientation(delta)
 				apply_hover_force()
@@ -133,12 +155,14 @@ func _physics_process(delta: float) -> void:
 			stabilize_orientation(delta)
 			apply_hover_force(0.5)
 			execute_charge(delta)
+			
+		METEOR_SHOWER:
+			execute_meteor_shower(delta)
 	
 	if rim is Area3D and rim.has_overlapping_bodies():
 		if player in rim.get_overlapping_bodies():
 			push_player()
 			player.hurt()
-
 func attempt_shoot() -> void:
 	if not can_shoot or not player or shoot_timer < SHOOT_COOLDOWN:
 		return
@@ -380,6 +404,56 @@ func execute_charge(delta: float) -> void:
 		state_timer = 0.0
 		pick_new_flight_parameters()
 
+
+func execute_meteor_shower(delta: float) -> void:
+	stabilize_orientation(delta)
+	
+	# Move to shower height
+	var target_height = initial_height + SHOWER_HEIGHT
+	var height_diff = target_height - global_position.y
+	
+	
+	if abs(height_diff) > 0.1:
+		# Moving to position
+		var hover_force = Vector3.UP * height_diff * HOVER_FORCE * SHOWER_TRANSITION_SPEED
+		apply_force(hover_force)
+		linear_velocity.y *= DAMPING
+	else:
+		# In position, start/continue shower
+		if shower_timer == 0.0:
+			world.shower()  # Start the shower when we reach position
+		shower_timer += delta
+		var hover_force = Vector3.UP * height_diff * HOVER_FORCE * SHOWER_TRANSITION_SPEED
+		apply_force(hover_force)
+		if shower_timer >= SHOWER_DURATION:
+			end_meteor_shower()
+
+
+func start_meteor_shower() -> void:
+	previous_state = current_state
+	current_state = METEOR_SHOWER
+	state_timer = 0.0
+	shower_timer = 0.0
+	can_shower = false
+	shower_cooldown_timer = 0.0
+	linear_velocity = Vector3.ZERO
+
+
+func end_meteor_shower() -> void:
+	world.end_shower()  # End the shower effect
+	can_shower = false  # Start cooldown
+	shower_cooldown_timer = 0.0
+	
+	# Randomly decide to do charge or go back to circling
+	if randf() > 0.5:
+		current_state = PREPARING_CHARGE
+		state_timer = 0.0
+		start_charge_attack()
+	else:
+		current_state = CIRCLING
+		state_timer = 0.0
+		pick_new_flight_parameters()
+
 func stabilize_orientation(delta: float) -> void:
 	var current_up = transform.basis.y.normalized()
 	var up_alignment = current_up.dot(Vector3.UP)
@@ -403,7 +477,7 @@ func stabilize_orientation(delta: float) -> void:
 		target_basis.z = -target_forward
 		
 		var target_transform = Transform3D(target_basis, global_position)
-		transform = transform.interpolate_with(target_transform, ROTATION_INTERPOLATION)
+		#transform = transform.interpolate_with(target_transform, ROTATION_INTERPOLATION)
 	
 	angular_velocity *= ROTATION_DAMPING
 	
@@ -426,6 +500,8 @@ func apply_hover_force(multiplier: float = 1.0) -> void:
 			target_height += CHARGE_HEIGHT
 			if global_position.y > target_height:
 				apply_force(Vector3.DOWN * HOVER_FORCE * 2.0 * multiplier)
+		METEOR_SHOWER:
+			target_height += SHOWER_HEIGHT
 	
 	var height_diff = target_height - global_position.y
 	var hover_force = Vector3.UP * height_diff * HOVER_FORCE * multiplier
