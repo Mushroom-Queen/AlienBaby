@@ -17,7 +17,7 @@ const BOLT_MASS = 20.0
 var can_shoot := true
 var shoot_timer := 0.0
 var current_bolt = null
-var life = 5
+var life = 100
 
 # Lightning bolt specific constants
 const SEGMENTS = 6  # Number of segments in the lightning bolt
@@ -502,7 +502,7 @@ func stabilize_orientation(delta: float) -> void:
 func hurt():
 	life -= 5
 	if life <= 0:
-		get_tree().change_scene_to_file("res://game_over.tscn")
+		get_tree().change_scene_to_file("res://you_win.tscn")
 
 func apply_hover_force(multiplier: float = 1.0) -> void:
 	var target_height = initial_height

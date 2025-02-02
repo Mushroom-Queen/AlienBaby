@@ -22,5 +22,5 @@ func find_world(node=get_tree().root) -> Node:
 func _process(delta: float) -> void:
 	if player in get_overlapping_bodies():
 		if player.life < 4:
-			player.life += 1
+			player.life = 4
 			queue_free()
